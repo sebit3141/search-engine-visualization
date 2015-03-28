@@ -12,18 +12,15 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import de.sebit.sev.service.ParseBingSearchService;
+import de.sebit.sev.service.SearchService;
 
 /**
  * Handles requests for the application home page.
  */
 @Controller
-public class HomeController {
+public class IndexController {
 	
-	private static final Logger logger = LoggerFactory.getLogger(HomeController.class);
-	
-	@Autowired
-	private ParseBingSearchService parseBingSearchService;
+	private static final Logger logger = LoggerFactory.getLogger(IndexController.class);
 	
 	/**
 	 * Simply selects the home view to render by returning its name.
@@ -40,24 +37,5 @@ public class HomeController {
 		model.addAttribute("serverTime", formattedDate );
 				
 		return "index";
-	}
-		
-	/**
-	 * Simply selects the home view to render by returning its name.
-	 */
-	@RequestMapping(value = "/charts", method = RequestMethod.GET)
-	public String chart(Locale locale, Model model) {
-		logger.info("Welcome home! The client locale is {}.", locale);
-		
-		Date date = new Date();
-		DateFormat dateFormat = DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.LONG, locale);
-		
-		String formattedDate = dateFormat.format(date);
-		
-		model.addAttribute("serverTime", formattedDate );
-		
-        parseBingSearchService.search();
-		
-		return "charts";
 	}
 }

@@ -5,8 +5,8 @@
 	<ul class="nav navbar-nav side-nav">
 		<li class="active"><a href="<spring:url value="/" />"><i
 				class="fa fa-fw fa-dashboard"></i> Dashboard</a></li>
-		<li><a href="<spring:url value="/charts" />"><i
-				class="fa fa-fw fa-bar-chart-o"></i> Charts</a></li>
+		<li><a href="<spring:url value="/search" />"><i
+				class="fa fa-fw fa-bar-chart-o"></i> /search</a></li>
 		<li><a href="tables.html"><i class="fa fa-fw fa-table"></i>
 				Tables</a></li>
 		<li><a href="forms.html"><i class="fa fa-fw fa-edit"></i>
