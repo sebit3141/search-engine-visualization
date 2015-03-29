@@ -18,4 +18,12 @@
 		<put-attribute name="body" value="/WEB-INF/views/search.jsp" />
 	</definition>
 
+	<definition name="index2" template="/WEB-INF/views/index2.jsp">
+		<put-attribute name="title" value="SEV" />
+	</definition>
+
+	<definition name="search2" template="/WEB-INF/views/search2.jsp">
+		<put-attribute name="title" value="SEV" />
+	</definition>
+
 </tiles-definitions>
