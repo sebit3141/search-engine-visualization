@@ -25,7 +25,7 @@ public class QueryController {
 	/**
 	 * Simply selects the home view to render by returning its name.
 	 */
-	@RequestMapping(value = "/search2", method = RequestMethod.GET)
+	@RequestMapping(value = "/search", method = RequestMethod.GET)
 	public String search(@RequestParam(value="query", required=false) String query, Locale locale, Model model) {
 		logger.info("Welcome home! The client locale is {}.", locale);
 		
@@ -34,7 +34,7 @@ public class QueryController {
 
         //searchService.search();
 		
-		return "search2";
+		return "search";
 	}
 
 }

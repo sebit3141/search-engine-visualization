@@ -27,13 +27,7 @@
 <!-- js.bootstrap: Latest compiled and minified JavaScript -->
 <script	src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
 
-<!-- Custom CSS 
-<link href="resources/css/sb-admin.css" rel="stylesheet" type="text/css">
--->
-
-<!-- Morris Charts CSS 
-<link href="resources/css/plugins/morris.css" rel="stylesheet" type="text/css">
--->
+<!-- Custom CSS -->
 <link href="resources/css/styles.css" rel="stylesheet">	
 
 <!-- Custom Fonts -->
@@ -42,11 +36,6 @@
 <link href="https://netdna.bootstrapcdn.com/font-awesome/3.2.1/css/font-awesome.min.css" rel="stylesheet">
 -->
 
-
-<!-- /#wrapper -->
-
-<!-- Morris Charts JavaScript 
-<script src="resources/js/plugins/morris/raphael.min.js"></script>
-<script src="resources/js/plugins/morris/morris.min.js"></script>
-<script src="resources/js/plugins/morris/morris-data.js"></script>
+<!-- Custom JS 
+<script src="resources/js/scripts.js"></script>
 -->
