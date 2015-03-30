@@ -12,8 +12,7 @@
 <meta name="description" content="">
 <meta name="author" content="">
 
-<!-- js.jQuery -->
-<script	src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.js"></script>
+<!-- CSS -->
 
 <!-- css.bootstrap: Latest compiled and minified CSS 
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
@@ -24,18 +23,27 @@
 <!-- css.bootstrap: Optional theme 
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap-theme.min.css">
 -->
-<!-- js.bootstrap: Latest compiled and minified JavaScript -->
-<script	src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
 
-<!-- Custom CSS -->
+<!-- css.Custom -->
 <link href="resources/css/styles.css" rel="stylesheet">	
 
-<!-- Custom Fonts -->
+<!-- css.Custom.Fonts -->
 <link href="resources/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
 <!--
 <link href="https://netdna.bootstrapcdn.com/font-awesome/3.2.1/css/font-awesome.min.css" rel="stylesheet">
 -->
 
-<!-- Custom JS 
-<script src="resources/js/scripts.js"></script>
+<!-- JS -->
+
+<!-- js.jQuery -->
+<script	src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.js"></script>
+
+<!-- js.bootstrap: Latest compiled and minified JavaScript -->
+<script	src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+
+<!-- js.Custom
+<script src="resources/js/highlight/jquery.highlight-5.js"></script>
+<script src="resources/js/highlight/jquery.highlight.js"></script>
 -->
+<script src="resources/js/scripts.js"></script>
+<script src="resources/js/highlight/hilitor-bold.js"></script>

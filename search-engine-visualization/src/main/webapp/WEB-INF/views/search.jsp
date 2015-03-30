@@ -15,7 +15,7 @@
 	          	<form action="<spring:url value="/search" />" method="GET"
 	          		style="padding: 8px 0 8px 0;">
 					<div class="input-group" style="max-width: 470px;">
-						<input name="query" id="query" type="text" class="form-control" placeholder="Search" value="${queryString}" >
+						<input value="${queryString}" name="query" id="input-query" type="text" class="form-control" placeholder="Search">
 						<div class="input-group-btn">
 							<button class="btn btn-default btn-primary" type="submit">
 								<i class="glyphicon glyphicon-search"></i>
@@ -43,16 +43,26 @@
 			</ul>
 			<div id="myTabContent" class="tab-content">
 			  <div class="tab-pane fade active in" id="home">
-			    <p></p>
+			    <br>
 			    <table class="table table-bordered table-hover table-striped">
 					<thead>
 					</thead>
-					<tbody>
+					<tbody id="hilitor">
 						<c:forEach items="${results}" var="result">
 							<tr>
-								<td><a href='<spring:url value="${result.url}" />'> <c:out
-											value="${result.title}" />
-								</a></td>
+								<td>
+									<h5>
+										<a href='<spring:url value="${result.url}" />'> 
+											<c:out value="${result.title}" />
+										</a>	
+									</h5>
+									<p class="text-success">
+										<c:out value="${result.displayUrl}" />
+									</p>
+									<p>
+										<c:out value="${result.description}" />
+									</p>
+								</td>
 								<td><a href='<spring:url value="${result.displayUrl}" />'
 									class="btn btn-danger triggerRemove"> remove </a></td>
 							</tr>
