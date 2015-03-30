@@ -3,9 +3,18 @@
        "-//Apache Software Foundation//DTD Tiles Configuration 3.0//EN"
        "http://tiles.apache.org/dtds/tiles-config_3_0.dtd">
 <tiles-definitions>
+	<definition name="index" template="/WEB-INF/views/index.jsp">
+		<put-attribute name="title" value="SEV" />
+	</definition>
+
 	<definition name="common" template="/WEB-INF/views/layout/common.jsp">
+		<put-attribute name="title" value="SEV" />
 		<put-attribute name="header" value="/WEB-INF/views/layout/header.jsp" />
 		<put-attribute name="menu" value="/WEB-INF/views/layout/menu.jsp" />
+	</definition>
+		
+	<definition name="search" extends="common">
+		<put-attribute name="body" value="/WEB-INF/views/search.jsp" />
 	</definition>
 	
 	<!-- 
@@ -18,14 +27,10 @@
 		<put-attribute name="title" value="SEV" />
 		<put-attribute name="body" value="/WEB-INF/views/search.jsp" />
 	</definition>
-	-->
 	
-	<definition name="index" template="/WEB-INF/views/index.jsp">
-		<put-attribute name="title" value="SEV" />
-	</definition>
-
 	<definition name="search" template="/WEB-INF/views/search.jsp">
 		<put-attribute name="title" value="SEV" />
 	</definition>
+	-->
 
 </tiles-definitions>

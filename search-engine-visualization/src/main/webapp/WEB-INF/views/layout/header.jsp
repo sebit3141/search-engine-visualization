@@ -1,99 +1,24 @@
+<!-- .jsp items -->
 <%@ page language="java" contentType="text/html; charset=UTF-8"
-pageEncoding="UTF-8"%>
+	pageEncoding="UTF-8"%>
 
-<!-- Brand and toggle get grouped for better mobile display -->
-<div class="navbar-header">
-	<button type="button" class="navbar-toggle" data-toggle="collapse"
-		data-target=".navbar-ex1-collapse">
-		<span class="sr-only">Toggle navigation</span> <span class="icon-bar"></span>
-		<span class="icon-bar"></span> <span class="icon-bar"></span>
-	</button>
-	<a class="navbar-brand" href="index.html">SB Admin 23</a>
+<%@ include file="_taglib.jsp"%>
+
+<!-- Header: search items -->
+<div class="navbar navbar-default navbar-fixed-top">
+	<div class="container">
+		<a href='<spring:url value="/" />' class="navbar-brand">SEV</a>
+		<form action='<spring:url value="/search" />' method="GET"
+			style="padding: 8px 0 8px 0;">
+			<div class="input-group" style="max-width: 470px;">
+				<input value="${queryString}" name="query" id="input-query"
+					type="text" class="form-control" placeholder="Search">
+				<div class="input-group-btn">
+					<button class="btn btn-default btn-primary" type="submit">
+						<i class="glyphicon glyphicon-search"></i>
+					</button>
+				</div>
+			</div>
+		</form>
+	</div>
 </div>
-<!-- Top Menu Items -->
-<ul class="nav navbar-right top-nav">
-	<li class="dropdown"><a href="#" class="dropdown-toggle"
-		data-toggle="dropdown"><i class="fa fa-envelope"></i> <b
-			class="caret"></b></a>
-		<ul class="dropdown-menu message-dropdown">
-			<li class="message-preview"><a href="#">
-					<div class="media">
-						<span class="pull-left"> <img class="media-object"
-							src="http://placehold.it/50x50" alt="">
-						</span>
-						<div class="media-body">
-							<h5 class="media-heading">
-								<strong>John Smith</strong>
-							</h5>
-							<p class="small text-muted">
-								<i class="fa fa-clock-o"></i> Yesterday at 4:32 PM
-							</p>
-							<p>Lorem ipsum dolor sit amet, consectetur...</p>
-						</div>
-					</div>
-			</a></li>
-			<li class="message-preview"><a href="#">
-					<div class="media">
-						<span class="pull-left"> <img class="media-object"
-							src="http://placehold.it/50x50" alt="">
-						</span>
-						<div class="media-body">
-							<h5 class="media-heading">
-								<strong>John Smith</strong>
-							</h5>
-							<p class="small text-muted">
-								<i class="fa fa-clock-o"></i> Yesterday at 4:32 PM
-							</p>
-							<p>Lorem ipsum dolor sit amet, consectetur...</p>
-						</div>
-					</div>
-			</a></li>
-			<li class="message-preview"><a href="#">
-					<div class="media">
-						<span class="pull-left"> <img class="media-object"
-							src="http://placehold.it/50x50" alt="">
-						</span>
-						<div class="media-body">
-							<h5 class="media-heading">
-								<strong>John Smith</strong>
-							</h5>
-							<p class="small text-muted">
-								<i class="fa fa-clock-o"></i> Yesterday at 4:32 PM
-							</p>
-							<p>Lorem ipsum dolor sit amet, consectetur...</p>
-						</div>
-					</div>
-			</a></li>
-			<li class="message-footer"><a href="#">Read All New Messages</a>
-			</li>
-		</ul></li>
-	<li class="dropdown"><a href="#" class="dropdown-toggle"
-		data-toggle="dropdown"><i class="fa fa-bell"></i> <b class="caret"></b></a>
-		<ul class="dropdown-menu alert-dropdown">
-			<li><a href="#">Alert Name <span class="label label-default">Alert
-						Badge</span></a></li>
-			<li><a href="#">Alert Name <span class="label label-primary">Alert
-						Badge</span></a></li>
-			<li><a href="#">Alert Name <span class="label label-success">Alert
-						Badge</span></a></li>
-			<li><a href="#">Alert Name <span class="label label-info">Alert
-						Badge</span></a></li>
-			<li><a href="#">Alert Name <span class="label label-warning">Alert
-						Badge</span></a></li>
-			<li><a href="#">Alert Name <span class="label label-danger">Alert
-						Badge</span></a></li>
-			<li class="divider"></li>
-			<li><a href="#">View All</a></li>
-		</ul></li>
-	<li class="dropdown"><a href="#" class="dropdown-toggle"
-		data-toggle="dropdown"><i class="fa fa-user"></i> John Smith <b
-			class="caret"></b></a>
-		<ul class="dropdown-menu">
-			<li><a href="#"><i class="fa fa-fw fa-user"></i> Profile</a></li>
-			<li><a href="#"><i class="fa fa-fw fa-envelope"></i> Inbox</a></li>
-			<li><a href="#"><i class="fa fa-fw fa-gear"></i> Settings</a></li>
-			<li class="divider"></li>
-			<li><a href="#"><i class="fa fa-fw fa-power-off"></i> Log
-					Out</a></li>
-		</ul></li>
-</ul>
