@@ -1,4 +1,4 @@
-package de.sebit.sev.entity;
+package de.sebit.sev.dto;
 
 import java.io.Serializable;
 
@@ -7,7 +7,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 
 @Entity
-public class QueryEntity implements Serializable {
+public class QueryDTO implements Serializable {
 
 	@Id
 	@GeneratedValue

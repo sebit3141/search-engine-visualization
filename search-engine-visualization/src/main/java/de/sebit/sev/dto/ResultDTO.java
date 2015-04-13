@@ -1,10 +1,6 @@
-package de.sebit.sev.entity;
+package de.sebit.sev.dto;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
-
-//@Entity
-public class ResultEntity {
+public class ResultDTO {
 
 		//@Id
 		private Integer rank;

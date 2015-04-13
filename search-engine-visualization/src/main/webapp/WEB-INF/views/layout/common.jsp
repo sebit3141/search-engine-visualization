@@ -17,5 +17,7 @@
 		<tiles:insertAttribute name="header" />
 		<!-- Body-->
 		<tiles:insertAttribute name="body" />
+		<!-- Footer-->
+		<tiles:insertAttribute name="footer" />
 	</body>
 </html>

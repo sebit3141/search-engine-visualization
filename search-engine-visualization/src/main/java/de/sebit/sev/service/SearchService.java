@@ -9,7 +9,7 @@ import net.billylieurance.azuresearch.AzureSearchWebResult;
 
 import org.springframework.stereotype.Service;
 
-import de.sebit.sev.entity.ResultEntity;
+import de.sebit.sev.dto.ResultDTO;
 
 @Service
 public class SearchService {
@@ -21,10 +21,11 @@ public class SearchService {
 		query = new AzureSearchWebQuery();
         query.setAppid(appId);   
         query.setMarket("de-DE");
-        query.setPerPage(5);
+        query.setPerPage(50);
         System.out.println("----------------------SearchService"); 
 	}
-	
+
+//->
 	public void search() {  
 		//AzureSearchWebQuery query = new AzureSearchWebQuery();        
         query.setQuery("Mond");
@@ -32,7 +33,7 @@ public class SearchService {
  // The results are paged. You can get 50 results per page max.
  // This example gets 150 results
         int j = 0;
-        for (int i=1; i<=1 ; i++) {
+        for (int i=2; i<=2 ; i++) {
            query.setPage(i);
            query.doQuery();
            AzureSearchResultSet<AzureSearchWebResult> ars = query.getQueryResult();
@@ -55,39 +56,46 @@ public class SearchService {
            }
         }
 	}
+//<-
 	
-	public List<ResultEntity> searchBing(String queryString) {
-		List<ResultEntity> resultList = new ArrayList<ResultEntity>();
+	/**
+	 * Get SERPs from the search engine Bing. 
+	 * @param queryString user query 
+	 * @param page define the page for the SERPs
+	 * @return return a SERP List 
+	 */
+	public List<ResultDTO> searchBing(String queryString, int page) {
+		List<ResultDTO> resultList = new ArrayList<ResultDTO>();
 		int j = 1;
 
 		//set query for search
 		query.setQuery(queryString);
 		
 		//add results to the list
-		for (int i=1; i<=1 ; i++) {
-           query.setPage(i);
+		for (int i=1; i<=2 ; i++) {
+           query.setPage(page);
            query.doQuery();
            AzureSearchResultSet<AzureSearchWebResult> ars = query.getQueryResult();
            for (AzureSearchWebResult result : ars) {
-    		ResultEntity resultEntity = new ResultEntity();
-        	//get result
-    		resultEntity.setRank(j);
-        	resultEntity.setTitle(result.getTitle());
-        	resultEntity.setDisplayUrl(result.getDisplayUrl());
-        	resultEntity.setUrl(result.getUrl());
-        	resultEntity.setDescription(result.getDescription());
-        	
-        	//add result to List
-        	resultList.add(resultEntity);
-        	
-            System.out.println("------------" + resultList.size());
-            System.out.println(resultEntity.getRank());
-            System.out.println(resultEntity.getTitle());
-            System.out.println(resultEntity.getUrl());
-            System.out.println(resultEntity.getDisplayUrl());
-            System.out.println(resultEntity.getDescription()); 
-        	
-            j++;
+        	   ResultDTO resultDTO = new ResultDTO();
+        	   //get result
+        	   resultDTO.setRank(j);
+        	   resultDTO.setTitle(result.getTitle());
+        	   resultDTO.setDisplayUrl(result.getDisplayUrl());
+        	   resultDTO.setUrl(result.getUrl());
+        	   resultDTO.setDescription(result.getDescription());
+
+        	   //add result to List
+        	   resultList.add(resultDTO);
+
+        	   System.out.println("------------" + resultList.size());
+        	   System.out.println(resultDTO.getRank());
+        	   System.out.println(resultDTO.getTitle());
+        	   System.out.println(resultDTO.getUrl());
+        	   System.out.println(resultDTO.getDisplayUrl());
+        	   System.out.println(resultDTO.getDescription()); 
+
+        	   j++;
            }
         }	 		
 		return resultList; 

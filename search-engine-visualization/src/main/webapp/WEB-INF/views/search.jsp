@@ -30,10 +30,13 @@
 				<thead>
 				</thead>
 				<tbody id="hilitor">
-					<c:forEach items="${results}" var="result">
+					<c:forEach items="${results}" var="result" begin="0" end="10">
 						<tr>
 							<td>
 								<h5>
+									<span> 
+										<c:out value="${result.rank}" />
+									</span> 
 									<a href='<spring:url value="${result.url}" />'> <c:out
 											value="${result.title}" />
 									</a>
@@ -44,11 +47,24 @@
 								<p>
 									<c:out value="${result.description}" />
 								</p>
+
 							</td>
-							<td><a href='<spring:url value="${result.displayUrl}" />'
-								class="btn btn-danger triggerRemove"> remove </a></td>
+							<td>
+								<a href='<spring:url value="${result.displayUrl}" />'
+								class="btn btn-danger triggerRemove"> remove </a>
+							</td>
 						</tr>
 					</c:forEach>
+					<tr class="loadNextRow">
+						<td class="loadNextColumn" colspan="2">
+							<div style="text-align: center">
+								<strong>
+									<a href="<spring:url value='' />${noscriptNextPageUrl}"
+									class="loadButton">load next 10 items</a>
+								</strong>
+							</div>
+						</td>
+					</tr>
 				</tbody>
 			</table>
 		</div>

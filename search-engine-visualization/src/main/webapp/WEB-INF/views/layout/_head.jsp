@@ -20,6 +20,9 @@
 <!-- css.bootstrap: Latest compiled CSS -->
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.css">
 
+<!-- css.bootstrap: Font Awesome -->
+<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
 <!-- css.bootstrap: Optional theme 
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap-theme.min.css">
 -->
@@ -27,23 +30,14 @@
 <!-- css.Custom -->
 <link href="resources/css/styles.css" rel="stylesheet">	
 
-<!-- css.Custom.Fonts -->
+<!-- css.Custom.Fonts 
 <link href="resources/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
-<!--
-<link href="https://netdna.bootstrapcdn.com/font-awesome/3.2.1/css/font-awesome.min.css" rel="stylesheet">
 -->
 
 <!-- JS -->
 
 <!-- js.jQuery -->
-<script	src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.js"></script>
+<script	src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
 
 <!-- js.bootstrap: Latest compiled and minified JavaScript -->
 <script	src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
-
-<!-- js.Custom
-<script src="resources/js/highlight/jquery.highlight-5.js"></script>
-<script src="resources/js/highlight/jquery.highlight.js"></script>
--->
-<script src="resources/js/scripts.js"></script>
-<script src="resources/js/highlight/hilitor-bold.js"></script>
