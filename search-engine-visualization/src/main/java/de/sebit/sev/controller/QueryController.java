@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import de.sebit.sev.dto.ResultDTO;
+import de.sebit.sev.service.JsonService;
 import de.sebit.sev.service.SearchService;
 
 @Controller
@@ -25,6 +26,8 @@ public class QueryController {
 	@Autowired
 	private SearchService searchService;
 	
+	@Autowired
+	private JsonService jsonService;
 	/**
 	 * Control the incoming query parameter.
 	 */
@@ -32,9 +35,13 @@ public class QueryController {
 	public String search(@RequestParam(value="query", required=false) String query, Locale locale, Model model) {
 		logger.info("Welcome home! The client locale is {}.", locale);
 		
-		model.addAttribute("results", searchService.searchBing(query, 1));
+		List<ResultDTO> resultDTO = searchService.searchBing(query, 2);
+		String jsonResult = jsonService.getJSONfromDTO(resultDTO);
+		
+		model.addAttribute("resultDTO", resultDTO);
 		model.addAttribute("queryString", query);
-System.out.println("/search______________");
+		model.addAttribute("jsonResult", jsonResult);
+		//System.out.println("/search______________: " + jsonResult );
 
 		return "search";
 	}

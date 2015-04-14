@@ -30,14 +30,14 @@
 				<thead>
 				</thead>
 				<tbody id="hilitor">
-					<c:forEach items="${results}" var="result" begin="0" end="10">
+					<c:forEach items="${resultDTO}" var="result" begin="0" end="9">
 						<tr>
 							<td>
 								<h5>
 									<span> 
 										<c:out value="${result.rank}" />
 									</span> 
-									<a href='<spring:url value="${result.url}" />'> <c:out
+									<a href='<spring:url value="${result.url}" />' target="_blank"> <c:out
 											value="${result.title}" />
 									</a>
 								</h5>

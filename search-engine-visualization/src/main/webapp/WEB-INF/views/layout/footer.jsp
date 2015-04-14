@@ -20,3 +20,11 @@
 -->
 <script src="resources/js/scripts.js"></script>
 <script src="resources/js/highlight/hilitor-bold.js"></script>
+
+<!-- js.Custom: glabal scope (namespace) -->
+<script>
+	footer = {};
+	footer.jsp = {};
+	footer.jsp.ns = {};
+	footer.jsp.ns.jsonResult = ${jsonResult};
+</script>

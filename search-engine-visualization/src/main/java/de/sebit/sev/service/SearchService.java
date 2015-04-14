@@ -72,8 +72,8 @@ public class SearchService {
 		query.setQuery(queryString);
 		
 		//add results to the list
-		for (int i=1; i<=2 ; i++) {
-           query.setPage(page);
+		for (int i=1; i<=page ; i++) {
+           query.setPage(i);
            query.doQuery();
            AzureSearchResultSet<AzureSearchWebResult> ars = query.getQueryResult();
            for (AzureSearchWebResult result : ars) {
