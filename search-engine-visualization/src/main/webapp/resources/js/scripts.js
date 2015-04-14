@@ -95,7 +95,7 @@ function loadNextPageClient(e) {
 		html += "<tr>";
 			html += "<td>";
 				html += "<h5>";
-					html += "<span> " + value[i].rank + " </span>";
+					html += "<span>" + value[i].rank + " | </span>";
 					html += "<a href='" + value[i].url + "' target='_blank'> " + value[i].title + " </a>";
 				html += "</h5>";
 				html += "<p class='text-success'>" + value[i].displayUrl + "</p>";

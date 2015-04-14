@@ -180,7 +180,7 @@ h3, h4, h5 {
 }
 
 #main {
-	padding-top: 70px;
+	padding-top: 50px;
 }
 
 /* custom new */
@@ -191,6 +191,11 @@ a:focus {
 
 p {
 	margin: 0px;
+}
+
+.page-header {
+	margin: 0 0 20px;
+	color: #777;
 }
 
 /* highlight-5.js */

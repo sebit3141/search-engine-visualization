@@ -7,23 +7,23 @@
 		<put-attribute name="title" value="SEV" />
 	</definition>
 
-	<definition name="common" template="/WEB-INF/views/layout/common.jsp">
+	<definition name="template" template="/WEB-INF/views/layout/template.jsp">
 		<put-attribute name="title" value="SEV" />
 		<put-attribute name="header" value="/WEB-INF/views/layout/header.jsp" />
 		<put-attribute name="footer" value="/WEB-INF/views/layout/footer.jsp" />
 	</definition>
 		
-	<definition name="search" extends="common">
+	<definition name="search" extends="template">
 		<put-attribute name="body" value="/WEB-INF/views/search.jsp" />
 	</definition>
 	
 	<!-- 
-	<definition name="index" extends="common">
+	<definition name="index" extends="template">
 		<put-attribute name="title" value="SEV" />
 		<put-attribute name="body" value="/WEB-INF/views/index.jsp" />
 	</definition>
 		 
-	<definition name="search" extends="common">
+	<definition name="search" extends="template">
 		<put-attribute name="title" value="SEV" />
 		<put-attribute name="body" value="/WEB-INF/views/search.jsp" />
 	</definition>

@@ -4,6 +4,8 @@
 
 <%@ include file="./layout/_taglib.jsp"%>
 
+<%@ page session="false"%>
+
 <!-- .html document items -->
 <!DOCTYPE html>
 <html lang="en">
