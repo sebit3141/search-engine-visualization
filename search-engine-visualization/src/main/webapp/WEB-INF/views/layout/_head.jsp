@@ -41,3 +41,6 @@
 
 <!-- js.bootstrap: Latest compiled and minified JavaScript -->
 <script	src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+
+<!-- js.vis.org -->
+<script type="text/javascript" src="resources/js/vis/vis.min.js"></script>

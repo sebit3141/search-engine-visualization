@@ -14,7 +14,9 @@ $(function() {
 	
 	//event handler
 	$(".loadButton").click(loadNextPageClient);
-	
+	//$("#li_graph").click(network.redraw() );
+	//$("#li_graph").click(setNetwork);
+	//setNetwork();
 })
 
 /*
@@ -122,3 +124,59 @@ function finishRefresh() {
 	$(".loadButton").css("display","inline");
 	$(".fa-spin").remove()
 }
+
+/*
+ * - vis.org custom functions
+ */
+//function setNetwork() {
+$(function() {	
+	// create an array with nodes
+	var nodes = [ 
+		{id : 1, label : 'Node 1'}, 
+		{id : 2, label : 'Node 2'}, 
+		{id : 3, label : 'Node 3'}, 
+		{id : 4, label : 'Node 4'},
+		{id : 5, label : 'Node 5'} 
+	];
+
+	// create an array with edges
+	var edges = [ 
+		{from : 1, to : 2}, 
+		{from : 1, to : 3}, 
+		{from : 2, to : 4}, 
+		{from : 2, to : 5} 
+	];
+
+	// create a network
+	var container = document.getElementById('mynetwork');
+	var data = {
+		nodes : nodes,
+		edges : edges,
+	};
+
+	var network = new vis.Network(container, data, {});
+	//network.setSize('500px', '600px');
+})
+
+//canvas
+$(document).ready( function(){
+    //Get the canvas & context 
+	var c = $("#mynetwork canvas").first();
+    var ct = c.get(0).getContext('2d');
+    var container = $(c).parent();
+
+    //Run function when browser resizes
+    $(window).resize( respondCanvas );
+
+    function respondCanvas(){ 
+        c.attr('width', $(container).width() ); //max width
+        c.attr('height', $(container).height() ); //max height
+
+        //Call a function to redraw other content (texts, images etc)
+        network.redraw();
+    }
+
+    //Initial call 
+    respondCanvas();
+
+}); 
