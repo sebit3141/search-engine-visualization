@@ -38,10 +38,10 @@
 			<h2>SERPs<small></small></h2>
 		</div>
 		<ul class="nav nav-tabs">
-			<li class="active" id="li_graph"><a aria-expanded="false"
-				href="#graph" data-toggle="tab">Graph</a></li>
-			<li class=""><a aria-expanded="true" href="#list"
+			<li class="active"><a aria-expanded="false" href="#list"
 				data-toggle="tab">List</a></li>
+			<li class="" id="li_graph"><a aria-expanded="true" href="#graph"
+				data-toggle="tab">Graph</a></li>
 			<li class="dropdown"><a aria-expanded="false"
 				class="dropdown-toggle" data-toggle="dropdown" href="#">
 					Dropdown <span class="caret"></span>
@@ -53,13 +53,13 @@
 				</ul></li>
 		</ul>
 		<div id="myTabContent" class="tab-content">
-			<div class="tab-pane fade active in" id="graph">
-				<br>
-				<%@ include file="./parts/graph.jsp"%>
-			</div>
-			<div class="tab-pane fade" id="list">
+			<div class="tab-pane fade active in" id="list">
 				<br>
 				<%@ include file="./parts/list.jsp"%>
+			</div>
+			<div class="tab-pane fade" id="graph">
+				<br>
+				<%@ include file="./parts/graph.jsp"%>
 			</div>
 			<div class="tab-pane fade" id="dropdown1">
 				<p>Etsy mixtape wayfarers, ethical wes anderson tofu before they

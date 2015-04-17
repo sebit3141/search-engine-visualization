@@ -204,13 +204,13 @@ p {
 	background-color: yellow;
 }
 */
-
+ /* 
 canvas {
   	background-color: blue; 
- /* 
+ // 
  	width: 100%;
   	height: auto; 
-  */
+  //
 }
 
 .vis, .network-frame {
@@ -219,3 +219,4 @@ canvas {
     padding:50px 10%;
     height:300px;
 } 
+*/

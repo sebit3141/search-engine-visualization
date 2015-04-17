@@ -5,42 +5,28 @@
 <%@ include file="../layout/_taglib.jsp"%>
 
 <div class="graph">
-	<div id="mynetwork">graph</div>
-<!-- 
-	<script type="text/javascript">
-		// create an array with nodes
-		var nodes = [ 
-			{id : 1, label : 'Node 1'}, 
-			{id : 2, label : 'Node 2'}, 
-			{id : 3, label : 'Node 3'}, 
-			{id : 4, label : 'Node 4'},
-			{id : 5, label : 'Node 5'} 
-		];
+	<div id="viz"></div>
 
-		// create an array with edges
-		var edges = [ 
-			{from : 1, to : 2}, 
-			{from : 1, to : 3}, 
-			{from : 2, to : 4}, 
-			{from : 2, to : 5} 
-		];
+	<script>
 
-		// create a network
-		var container = document.getElementById('mynetwork');
-		var data = {
-			nodes : nodes,
-			edges : edges,
-		};
-		var options = {
-			width : '400px',
-			height : '400px'
-		};
-		
-		$("#graph").addClass("active"); 
-		var network = new vis.Network(container, data, options);
-		//network.on('stabilized', $("#graph").removeClass("active"));
-		$("canvas").ready($("#graph").removeClass("active"));
-		//network.setSize('500px', '600px');
-	</script>
--->
+  // sample data array
+  var sample_data = [
+    {"value": 100, "name": "alpha"},
+    {"value": 70, "name": "beta"},
+    {"value": 40, "name": "gamma"},
+    {"value": 15, "name": "delta"},
+    {"value": 5, "name": "epsilon"},
+    {"value": 1, "name": "zeta"}
+  ];
+
+  // instantiate d3plus
+  var visualization = d3plus.viz()
+    .container("#viz")  // container DIV to hold the visualization
+    .data(sample_data)  // data to use with the visualization
+    .type("tree_map")   // visualization type
+    .id("name")         // key for which our data is unique on
+    .size("value")      // sizing of blocks
+    .draw();            // finally, draw the visualization!
+
+</script>
 </div>

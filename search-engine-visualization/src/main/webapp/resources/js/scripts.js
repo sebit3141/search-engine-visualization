@@ -129,6 +129,8 @@ function finishRefresh() {
  * - vis.org custom functions
  */
 //function setNetwork() {
+
+/*
 $(function() {	
 	// create an array with nodes
 	var nodes = [ 
@@ -180,3 +182,4 @@ $(document).ready( function(){
     respondCanvas();
 
 }); 
+*/
