@@ -35,7 +35,7 @@
 	</div>
 	<div class="serps">
 		<div class="page-header">
-			<h2>SERPs<small></small></h2>
+			<h2>Search Engine Result Pages<small></small></h2>
 		</div>
 		<ul class="nav nav-tabs">
 			<li class="active"><a aria-expanded="false" href="#list"

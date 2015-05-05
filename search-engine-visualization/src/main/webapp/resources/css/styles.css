@@ -1,3 +1,7 @@
+/*
+ * Layout Document
+ */
+
 html, body {
 	height: 100%;
 }
@@ -204,19 +208,39 @@ p {
 	background-color: yellow;
 }
 */
- /* 
-canvas {
-  	background-color: blue; 
- // 
- 	width: 100%;
-  	height: auto; 
-  //
+
+/*
+ * D3 Visualization
+ */
+ 
+ /* graph */
+ 
+.link {
+	fill: none;
+	stroke: #666;
+	stroke-width: 1.5px;
 }
 
-.vis, .network-frame {
-    display:block;
-    width:80%;
-    padding:50px 10%;
-    height:300px;
-} 
-*/
+#licensing {
+	fill: green;
+}
+
+.link.licensing {
+	stroke: green;
+}
+
+.link.resolved {
+	stroke-dasharray: 0, 2 1;
+}
+
+circle {
+	fill: #ccc;
+	stroke: #333;
+	stroke-width: 1.5px;
+}
+
+text {
+	font: 10px sans-serif;
+	pointer-events: none;
+	text-shadow: 0 1px 0 #fff, 1px 0 0 #fff, 0 -1px 0 #fff, -1px 0 0 #fff;
+}

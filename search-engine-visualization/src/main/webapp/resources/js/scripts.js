@@ -2,25 +2,29 @@
  * - JS auto call 
  */
 $(function() {
-	// global scope
-	scripts = {};
-	scripts.js = {};
-	scripts.js.ns = {};
-	scripts.js.ns.currentPage = 1;
-	scripts.js.ns.serpsPerPage = 10;
-	
 	//bold the query string
-	setQueryStringBold();
+	ns.sev.setQueryStringBold();
 	
 	//event handler
-	$(".loadButton").click(loadNextPageClient);
-	//$("#li_graph").click(network.redraw() );
-	//$("#li_graph").click(setNetwork);
-	//setNetwork();
+	$(".loadButton").click(ns.sev.loadNextPageClient);
+
+	//D3 visualization
+	//$("#li_graph").click(ns.sev.graphD3());
+	ns.sev.graphD3()
 })
 
 /*
- * - get bold the query string
+ * - Namespace 
+ */
+	// add namespace
+	var ns = ns || {};
+	ns.sev = ns.sev || {};
+	// global scope
+	ns.sev.currentPage = 1;
+	ns.sev.serpsPerPage = 10;
+
+/*
+ * - Bold query string
  */
 
 /*
@@ -29,7 +33,7 @@ $(function() {
 });
 */
 
-function setQueryStringBold() {
+ns.sev.setQueryStringBold = function() {
 	var queryStr = document.getElementById("input-query").value;
 	var myHilitor = new Hilitor("hilitor"); 
 	
@@ -37,15 +41,15 @@ function setQueryStringBold() {
 }
 
 /*
- * - get next SERPs
+ * - Load next SERPs
  */
-function loadNextPageServer(e) {
+ns.sev.loadNextPageServer = function(e) {
 	if(e != null) {
 		e.preventDefault();
 	}
-	startRefresh();
+	ns.sev.startRefresh();
 	
-	var nextPage = scripts.js.ns.currentPage + 1;
+	var nextPage = ns.sev.currentPage + 1;
 	var url = "/search-engine-visualization/page/" + nextPage + ".json";
 	
 	$.getJSON( url, function( data ) {
@@ -73,113 +77,150 @@ function loadNextPageServer(e) {
 			html += "</tr>";
 		});
 		$("table.table").find("tr.loadNextRow").before(html);
-		finishRefresh();
+		ns.sev.finishRefresh();
 	});
-	scripts.js.ns.currentPage++;
+	ns.sev.currentPage++;
 	
 	//bold the query string
-	setQueryStringBold();
+	ns.sev.setQueryStringBold();
 }
 
-function loadNextPageClient(e) {
+ns.sev.loadNextPageClient = function(e) {
 	if(e != null) {
 		e.preventDefault();
 	}
-	startRefresh();
+	ns.sev.startRefresh();
 	
-	var nextPage = scripts.js.ns.currentPage + 1;
-	var value = footer.jsp.ns.jsonResult;
+	var nextPage = ns.sev.currentPage + 1;
+	var valueJson = ns.sev.jsonResults;
 	var html = "";
-	var i = scripts.js.ns.currentPage*scripts.js.ns.serpsPerPage;
-	var end = i + scripts.js.ns.serpsPerPage;
+	var i = ns.sev.currentPage*ns.sev.serpsPerPage;
+	var end = i + ns.sev.serpsPerPage;
 	
-	for (; i < end && value[i] !== undefined ; i ++) {
+	for (; i < end && valueJson[i] !== undefined ; i ++) {
 		html += "<tr>";
 			html += "<td>";
 				html += "<h5>";
-					html += "<span>" + value[i].rank + " | </span>";
-					html += "<a href='" + value[i].url + "' target='_blank'> " + value[i].title + " </a>";
+					html += "<span>" + valueJson[i].rank + " | </span>";
+					html += "<a href='" + valueJson[i].url + "' target='_blank'> " + valueJson[i].title + " </a>";
 				html += "</h5>";
-				html += "<p class='text-success'>" + value[i].displayUrl + "</p>";
-				html += "<p>" + value[i].description + "</p>";
+				html += "<p class='text-success'>" + valueJson[i].displayUrl + "</p>";
+				html += "<p>" + valueJson[i].description + "</p>";
 			html += "</td>";
 			html += "<td></td>";
 		html += "</tr>";
 	}
 	$("table.table").find("tr.loadNextRow").before(html);
-	finishRefresh();
-	scripts.js.ns.currentPage++;
+	ns.sev.finishRefresh();
+	ns.sev.currentPage++;
 	//bold the query string
-	setQueryStringBold();
+	ns.sev.setQueryStringBold();
 }
 
 //hide the .loadButton and add a Spinner
-function startRefresh() {
+ns.sev.startRefresh = function() {
 	$(".loadButton").css("display","none");
 	$(".loadButton").after("<i class='fa fa-refresh fa-spin'  style='color:#337ab7'></i>")
 }
 
 //show the .loadButton and remove the Spinner
-function finishRefresh() {
+ns.sev.finishRefresh = function() {
 	$(".loadButton").css("display","inline");
 	$(".fa-spin").remove()
 }
 
 /*
- * - vis.org custom functions
+ * - D3 Visualization
  */
-//function setNetwork() {
+ns.sev.graphD3 = function() {
+	// define links and nodes
+	var links = [];
+	var k = 10; //ns.sev.jsonResults.length
 
-/*
-$(function() {	
-	// create an array with nodes
-	var nodes = [ 
-		{id : 1, label : 'Node 1'}, 
-		{id : 2, label : 'Node 2'}, 
-		{id : 3, label : 'Node 3'}, 
-		{id : 4, label : 'Node 4'},
-		{id : 5, label : 'Node 5'} 
-	];
+	for (var i = 0; i < k ; i ++) {
+	  links[i] = {};
+	  links[i].source = ns.sev.jsonResults[i].query;
+	  links[i].target = ns.sev.jsonResults[i].displayUrl;
+	}
 
-	// create an array with edges
-	var edges = [ 
-		{from : 1, to : 2}, 
-		{from : 1, to : 3}, 
-		{from : 2, to : 4}, 
-		{from : 2, to : 5} 
-	];
+	var nodes = {};
 
-	// create a network
-	var container = document.getElementById('mynetwork');
-	var data = {
-		nodes : nodes,
-		edges : edges,
-	};
+	// Compute the distinct nodes from the links.
+	links.forEach(function(link) {
+	  link.source = nodes[link.source] || (nodes[link.source] = {name: link.source});
+	  link.target = nodes[link.target] || (nodes[link.target] = {name: link.target});
+	});
 
-	var network = new vis.Network(container, data, {});
-	//network.setSize('500px', '600px');
-})
+	// define size
+	var width = parseInt($(".tab-content").css("width"));
+	var height = 300;
 
-//canvas
-$(document).ready( function(){
-    //Get the canvas & context 
-	var c = $("#mynetwork canvas").first();
-    var ct = c.get(0).getContext('2d');
-    var container = $(c).parent();
+	// add layout
+	var force = d3.layout.force()
+	    .nodes(d3.values(nodes))
+	    .links(links)
+	    .size([width, height])
+	    .linkDistance(60)
+	    .charge(-300)
+	    .on("tick", tick)
+	    .start();
 
-    //Run function when browser resizes
-    $(window).resize( respondCanvas );
+	// add svg 
+	var svg = d3.select(".graph").append("svg")
+	    .attr("width", width)
+	    .attr("height", height);
 
-    function respondCanvas(){ 
-        c.attr('width', $(container).width() ); //max width
-        c.attr('height', $(container).height() ); //max height
+	// add links 
+	var link = svg.selectAll(".link")
+	    .data(force.links())
+	  .enter().append("line")
+	    .attr("class", "link");
 
-        //Call a function to redraw other content (texts, images etc)
-        network.redraw();
-    }
+	// add nodes
+	var node = svg.selectAll(".node")
+	    .data(force.nodes())
+	  .enter().append("g")
+	    .attr("class", "node")
+	    .on("mouseover", mouseover)
+	    .on("mouseout", mouseout)
+	    .call(force.drag);
 
-    //Initial call 
-    respondCanvas();
+	// add circle 
+	node.append("circle")
+	    .attr("r", 8);
 
-}); 
-*/
+	// add text
+	node.append("text")
+	    .attr("x", 12)
+	    .attr("dy", ".35em")
+	    .text(function(d) { return d.name; });
+
+	// define tick()
+	function tick() {
+	  link
+	      .attr("x1", function(d) { return d.source.x; })
+	      .attr("y1", function(d) { return d.source.y; })
+	      .attr("x2", function(d) { return d.target.x; })
+	      .attr("y2", function(d) { return d.target.y; });
+
+	  node
+	      .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+	}
+
+	// define mouse events
+	function mouseover() {
+	  d3.select(this).select("circle").transition()
+	      .duration(750)
+	      .attr("r", 16);
+	}
+
+	function mouseout() {
+	  d3.select(this).select("circle").transition()
+	      .duration(750)
+	      .attr("r", 8);
+	}
+}
+
+ns.sev.graphD32 = function() {
+	
+}

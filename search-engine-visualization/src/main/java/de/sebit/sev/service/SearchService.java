@@ -84,6 +84,7 @@ public class SearchService {
         	   resultDTO.setDisplayUrl(result.getDisplayUrl());
         	   resultDTO.setUrl(result.getUrl());
         	   resultDTO.setDescription(result.getDescription());
+        	   resultDTO.setQuery(queryString);
 
         	   //add result to List
         	   resultList.add(resultDTO);

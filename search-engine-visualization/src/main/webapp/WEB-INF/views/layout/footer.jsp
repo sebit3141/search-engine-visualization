@@ -18,13 +18,13 @@
 <script src="resources/js/highlight/jquery.highlight-5.js"></script>
 <script src="resources/js/highlight/jquery.highlight.js"></script>
 -->
-<script src="resources/js/scripts.js"></script>
-<script src="resources/js/highlight/hilitor-bold.js"></script>
 
 <!-- js.Custom: glabal scope (namespace) -->
 <script>
-	footer = {};
-	footer.jsp = {};
-	footer.jsp.ns = {};
-	footer.jsp.ns.jsonResult = ${jsonResult};
+	var ns = ns || {};
+	ns.sev = ns.sev || {};
+	ns.sev.jsonResults = ${jsonResults};
 </script>
+
+<script src="resources/js/scripts.js"></script>
+<script src="resources/js/highlight/hilitor-bold.js"></script>

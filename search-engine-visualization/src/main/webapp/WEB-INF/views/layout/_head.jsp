@@ -42,15 +42,15 @@
 <!-- js.bootstrap: Latest compiled and minified JavaScript -->
 <script	src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
 
-<!-- js.d3 
+<!-- js.d3 -->
 <script	src="http://d3js.org/d3.v3.min.js"></script>
-
+<!-- 
 <script type="text/javascript" src="resources/js/d3/d3.min.js"></script>
 <script type="text/javascript" src="resources/js/d3/d3plus.min.js"></script>
--->
-<!-- load D3plus with all dependencies -->
+ -->
+<!-- load D3plus with all dependencies 
 <script src="resources/js/d3/d3plus.full.min.js"></script>
-
+-->
 <!-- js.vis.org 
 <script type="text/javascript" src="resources/js/vis/vis.min.js"></script>
 -->

@@ -35,14 +35,17 @@ public class QueryController {
 	public String search(@RequestParam(value="query", required=false) String query, Locale locale, Model model) {
 		logger.info("Welcome home! The client locale is {}.", locale);
 		
+		// call service
 		List<ResultDTO> resultDTO = searchService.searchBing(query, 2);
-		String jsonResult = jsonService.getJSONfromDTO(resultDTO);
+		String jsonResults = jsonService.getJSONfromDTO(resultDTO);
 		
-		model.addAttribute("resultDTO", resultDTO);
-		model.addAttribute("queryString", query);
-		model.addAttribute("jsonResult", jsonResult);
-		//System.out.println("/search______________: " + jsonResult );
+		// add to Model
+		model.addAttribute("resultDTO", resultDTO);	// View access: search.jsp
+		model.addAttribute("jsonResults", jsonResults); // View access: footer.jsp
+		model.addAttribute("queryString", query); // View access: header.jsp
+		System.out.println("/search______________: " + jsonResults );
 
+		// call View
 		return "search";
 	}
 
