@@ -1,2 +1,13 @@
-/target/
+#ignore Mac
 .DS_Store
+#ignore Project
+target
+#ignore Eclispe
+.classpath
+.project
+.settings
+Users
+#ingore others
+*.iml
+overlays
+.idea

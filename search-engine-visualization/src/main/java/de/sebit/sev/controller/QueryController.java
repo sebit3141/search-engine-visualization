@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import de.sebit.sev.dto.ResultDTO;
-import de.sebit.sev.service.JsonService;
 import de.sebit.sev.service.SearchService;
 
 @Controller
@@ -26,8 +25,6 @@ public class QueryController {
 	@Autowired
 	private SearchService searchService;
 	
-	@Autowired
-	private JsonService jsonService;
 	/**
 	 * Control the incoming query parameter.
 	 */
@@ -35,17 +32,22 @@ public class QueryController {
 	public String search(@RequestParam(value="query", required=false) String query, Locale locale, Model model) {
 		logger.info("Welcome home! The client locale is {}.", locale);
 		
-		// call service
-		List<ResultDTO> resultDTO = searchService.searchBing(query, 2);
-		String jsonResults = jsonService.getJSONfromDTO(resultDTO);
+		//call service
+		List<ResultDTO> resultDTOList = searchService.bingService.getBingResultDTOList(query, 2);
+		String resultDTOListJSON = searchService.jsonService.getJSONfromList(resultDTOList);
+		searchService.solrService.addListToSolrCore(resultDTOList);
 		
-		// add to Model
-		model.addAttribute("resultDTO", resultDTO);	// View access: search.jsp
-		model.addAttribute("jsonResults", jsonResults); // View access: footer.jsp
+		//add to Model
 		model.addAttribute("queryString", query); // View access: header.jsp
-		System.out.println("/search______________: " + jsonResults );
+		model.addAttribute("resultDTO", resultDTOList);	// View access: search.jsp
+		model.addAttribute("resultDTOListJSON", resultDTOListJSON); // View access: footer.jsp
+		
+		//to delete
+		System.out.println("/search____________ query: " + query);
+		System.out.println("/search____________ resultDTOList: " + resultDTOList);
+		System.out.println("/search____________ resultDTOListJSON: " + resultDTOListJSON);
 
-		// call View
+		//call View
 		return "search";
 	}
 
@@ -57,6 +59,6 @@ public class QueryController {
 	public List<ResultDTO> getPageLatest(@PathVariable int page) {
         System.out.println("ajax______________page: " + page);
 
-        return searchService.searchBing("home", page);
+        return searchService.bingService.getBingResultDTOList("home", page);
 	}
 }

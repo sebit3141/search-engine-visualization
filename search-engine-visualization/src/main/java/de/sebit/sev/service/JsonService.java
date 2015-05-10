@@ -2,7 +2,7 @@ package de.sebit.sev.service;
 
 import java.util.List;
 
-import org.apache.commons.logging.Log;
+import org.apache.solr.common.util.NamedList;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -14,17 +14,37 @@ import de.sebit.sev.dto.ResultDTO;
 public class JsonService {
 	
 	/**
-	 * Convert a DTO list in a JSON string. 
-	 * @param dtoList get a DTO as list which convert into a JSON string
+	 * Convert a list in a JSON string. 
+	 * @param list (with <POJO> elements) convert into a JSON string
 	 * @return return a JSON string
 	 * @throws JsonProcessingException 
 	 */
-	public String getJSONfromDTO(List<ResultDTO> dtoList) {
+	public String getJSONfromList(List<?> list) {
 		String json = null;
 		ObjectMapper mapper = new ObjectMapper();
 		
 		try {
-			json = mapper.writeValueAsString(dtoList);
+			json = mapper.writeValueAsString(list);
+		} catch (JsonProcessingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return json;
+	}
+	
+	/**
+	 * Convert a list in a JSON string. 
+	 * @param namedList (with <POJO> elements) convert into a JSON string
+	 * @return return a JSON string
+	 * @throws JsonProcessingException 
+	 */
+	public String getJSONfromNamedList(NamedList<?> namedList) {
+		String json = null;
+		ObjectMapper mapper = new ObjectMapper();
+		
+		try {
+			json = mapper.writeValueAsString(namedList);
 		} catch (JsonProcessingException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

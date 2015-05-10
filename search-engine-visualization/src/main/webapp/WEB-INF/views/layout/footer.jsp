@@ -23,7 +23,7 @@
 <script>
 	var ns = ns || {};
 	ns.sev = ns.sev || {};
-	ns.sev.jsonResults = ${jsonResults};
+	ns.sev.resultDTOListJSON = ${resultDTOListJSON};
 </script>
 
 <script src="resources/js/scripts.js"></script>

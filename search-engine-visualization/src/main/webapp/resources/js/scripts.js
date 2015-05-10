@@ -1,5 +1,16 @@
 /*
- * - JS auto call 
+ * - Namespace 
+ */
+//declare namespace
+var ns = ns || {};
+ns.sev = ns.sev || {};
+//declare global scope
+ns.sev.currentPage = 1;
+ns.sev.serpsPerPage = 10;
+ns.sev.solrURL = "http://localhost:5000/sevCore/clustering?wt=json";
+
+/*
+ * - JavaScript auto call 
  */
 $(function() {
 	//bold the query string
@@ -10,18 +21,11 @@ $(function() {
 
 	//D3 visualization
 	//$("#li_graph").click(ns.sev.graphD3());
-	ns.sev.graphD3()
+	ns.sev.graphD3();
+	
+	//AJAX: Solr Clustering
+	ns.sev.solrClustering();
 })
-
-/*
- * - Namespace 
- */
-	// add namespace
-	var ns = ns || {};
-	ns.sev = ns.sev || {};
-	// global scope
-	ns.sev.currentPage = 1;
-	ns.sev.serpsPerPage = 10;
 
 /*
  * - Bold query string
@@ -92,7 +96,7 @@ ns.sev.loadNextPageClient = function(e) {
 	ns.sev.startRefresh();
 	
 	var nextPage = ns.sev.currentPage + 1;
-	var valueJson = ns.sev.jsonResults;
+	var valueJson = ns.sev.resultDTOListJSON;
 	var html = "";
 	var i = ns.sev.currentPage*ns.sev.serpsPerPage;
 	var end = i + ns.sev.serpsPerPage;
@@ -135,12 +139,12 @@ ns.sev.finishRefresh = function() {
 ns.sev.graphD3 = function() {
 	// define links and nodes
 	var links = [];
-	var k = 10; //ns.sev.jsonResults.length
+	var k = 10; //ns.sev.resultDTOListJSON.length
 
 	for (var i = 0; i < k ; i ++) {
 	  links[i] = {};
-	  links[i].source = ns.sev.jsonResults[i].query;
-	  links[i].target = ns.sev.jsonResults[i].displayUrl;
+	  links[i].source = ns.sev.resultDTOListJSON[i].query;
+	  links[i].target = ns.sev.resultDTOListJSON[i].displayUrl;
 	}
 
 	var nodes = {};
@@ -223,4 +227,19 @@ ns.sev.graphD3 = function() {
 
 ns.sev.graphD32 = function() {
 	
+}
+
+/*
+ * - AJAX: Solr Clustering
+ */
+
+ns.sev.solrClustering = function() {
+	$.ajax({
+		url: ns.sev.solrURL,
+		dataType: 'jsonp',
+		jsonp: 'json.wrf',
+		success: function(response){
+			ns.sev.resultListClusterJSON = response;
+		}
+	});
 }
