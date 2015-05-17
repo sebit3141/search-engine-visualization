@@ -214,7 +214,6 @@ p {
  */
  
  /* graph */
- 
 .link {
 	fill: none;
 	stroke: #666;
@@ -243,4 +242,25 @@ text {
 	font: 10px sans-serif;
 	pointer-events: none;
 	text-shadow: 0 1px 0 #fff, 1px 0 0 #fff, 0 -1px 0 #fff, -1px 0 0 #fff;
+}
+
+ /* tree */
+ .node {
+  cursor: pointer;
+}
+
+.node circle {
+  fill: #fff;
+  stroke: steelblue;
+  stroke-width: 1.5px;
+}
+
+.node text {
+  font: 10px sans-serif;
+}
+
+.link {
+  fill: none;
+  stroke: #ccc;
+  stroke-width: 1.5px;
 }

@@ -1,42 +1,67 @@
 /*
  * - Namespace 
  */
-//declare namespace
+//-declare namespace
 var ns = ns || {};
 ns.sev = ns.sev || {};
-//declare global scope
+//-declare global scope
 ns.sev.currentPage = 1;
 ns.sev.serpsPerPage = 10;
+//--Solr
 ns.sev.solrURL = "http://localhost:5000/sevCore/clustering?wt=json";
+ns.sev.resultSolrJSON = {};
+ns.sev.resultClusterTree = {};
 
 /*
  * - JavaScript auto call 
  */
 $(function() {
-	//bold the query string
+	//-AJAX: Solr Clustering
+	ns.sev.ajaxSolrClustering();
+	
+	//-bold the query string
 	ns.sev.setQueryStringBold();
 	
-	//event handler
+	//-event handler
 	$(".loadButton").click(ns.sev.loadNextPageClient);
+})
 
-	//D3 visualization
+/*
+ * - AJAX: Solr Clustering
+ */
+
+ns.sev.ajaxSolrClustering = function() {
+	$.ajax({
+		url: ns.sev.solrURL,
+		dataType: 'jsonp',
+		jsonp: 'json.wrf',
+		success: function(response){
+			ns.sev.resultSolrJSON = response;
+			ns.sev.afterAJAX();
+		},
+		error: function (xhr, err) {
+            console.log(xhr);
+            console.log(err);
+        }
+	});
+}
+
+/*
+ * - JS function call after AJAX (Solr Clostering)
+ */
+ns.sev.afterAJAX = function() {
+	//-D3 visualization
+	//--graph
 	//$("#li_graph").click(ns.sev.graphD3());
 	ns.sev.graphD3();
-	
-	//AJAX: Solr Clustering
-	ns.sev.solrClustering();
-})
+	//--tree
+	ns.sev.resultClusterTree = ns.sev.getClusterTree(ns.sev.resultSolrJSON);
+	ns.sev.drawD3Tree(ns.sev.resultClusterTree);
+}
 
 /*
  * - Bold query string
  */
-
-/*
-$(function() {
-	$("p").highlight(["car", "a"]);
-});
-*/
-
 ns.sev.setQueryStringBold = function() {
 	var queryStr = document.getElementById("input-query").value;
 	var myHilitor = new Hilitor("hilitor"); 
@@ -136,6 +161,8 @@ ns.sev.finishRefresh = function() {
 /*
  * - D3 Visualization
  */
+
+//Graph 
 ns.sev.graphD3 = function() {
 	// define links and nodes
 	var links = [];
@@ -225,21 +252,161 @@ ns.sev.graphD3 = function() {
 	}
 }
 
-ns.sev.graphD32 = function() {
+//Tree
+ns.sev.getClusterTree = function(resultSolr) {
+	//set clusterRoot
+	var clusterRoot = {"name":"", "children":[]};
+	clusterRoot.name = resultSolr.response.docs[0].query;
+	resultSolr.clusters.forEach(function(clustersItem) {
+		//set clusterLabel
+		var clusterLabel = {"name":"", "children":[]};
+		clusterLabel.name = clustersItem.labels[0];
+		clustersItem.docs.forEach(function(docsItem) {
+			//set clusterDoc
+			var clusterDoc = {"name":"", "title":"", "description":"", "displayUrl":"", "url":"", "query":""};
+			clusterDoc.name = docsItem;
+			clusterLabel.children.push(clusterDoc);
+		});
+		clusterRoot.children.push(clusterLabel);
+	});
 	
+	return clusterRoot;
 }
 
-/*
- * - AJAX: Solr Clustering
- */
+ns.sev.drawD3Tree = function(clusterTree) {
+	var margin = {top: 20, right: 120, bottom: 20, left: 120},
+	width = 960 - margin.right - margin.left,
+	height = 800 - margin.top - margin.bottom;
 
-ns.sev.solrClustering = function() {
-	$.ajax({
-		url: ns.sev.solrURL,
-		dataType: 'jsonp',
-		jsonp: 'json.wrf',
-		success: function(response){
-			ns.sev.resultListClusterJSON = response;
+	var i = 0,
+	duration = 750,
+	root;
+
+	var tree = d3.layout.tree()
+	.size([height, width]);
+
+	var diagonal = d3.svg.diagonal()
+	.projection(function(d) { return [d.y, d.x]; });
+
+	var svg = d3.select("div.tree").append("svg")
+	.attr("width", width + margin.right + margin.left)
+	.attr("height", height + margin.top + margin.bottom)
+	.append("g")
+	.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+	root = clusterTree;
+	root.x0 = height / 2;
+	root.y0 = 0;
+
+	function collapse(d) {
+		if (d.children) {
+			d._children = d.children;
+			d._children.forEach(collapse);
+			d.children = null;
 		}
-	});
+	}
+
+	root.children.forEach(collapse);
+	update(root);
+
+	d3.select(self.frameElement).style("height", "800px");
+
+	function update(source) {
+
+		// Compute the new tree layout.
+		var nodes = tree.nodes(root).reverse(),
+		links = tree.links(nodes);
+
+		// Normalize for fixed-depth.
+		nodes.forEach(function(d) { d.y = d.depth * 180; });
+
+		// Update the nodes…
+		var node = svg.selectAll("g.node")
+		.data(nodes, function(d) { return d.id || (d.id = ++i); });
+
+		// Enter any new nodes at the parent's previous position.
+		var nodeEnter = node.enter().append("g")
+		.attr("class", "node")
+		.attr("transform", function(d) { return "translate(" + source.y0 + "," + source.x0 + ")"; })
+		.on("click", click);
+
+		nodeEnter.append("circle")
+		.attr("r", 1e-6)
+		.style("fill", function(d) { return d._children ? "lightsteelblue" : "#fff"; });
+
+		nodeEnter.append("text")
+		.attr("x", function(d) { return d.children || d._children ? -10 : 10; })
+		.attr("dy", ".35em")
+		.attr("text-anchor", function(d) { return d.children || d._children ? "end" : "start"; })
+		.text(function(d) { return d.name; })
+		.style("fill-opacity", 1e-6);
+
+		// Transition nodes to their new position.
+		var nodeUpdate = node.transition()
+		.duration(duration)
+		.attr("transform", function(d) { return "translate(" + d.y + "," + d.x + ")"; });
+
+		nodeUpdate.select("circle")
+		.attr("r", 4.5)
+		.style("fill", function(d) { return d._children ? "lightsteelblue" : "#fff"; });
+
+		nodeUpdate.select("text")
+		.style("fill-opacity", 1);
+
+		// Transition exiting nodes to the parent's new position.
+		var nodeExit = node.exit().transition()
+		.duration(duration)
+		.attr("transform", function(d) { return "translate(" + source.y + "," + source.x + ")"; })
+		.remove();
+
+		nodeExit.select("circle")
+		.attr("r", 1e-6);
+
+		nodeExit.select("text")
+		.style("fill-opacity", 1e-6);
+
+		// Update the links…
+		var link = svg.selectAll("path.link")
+		.data(links, function(d) { return d.target.id; });
+
+		// Enter any new links at the parent's previous position.
+		link.enter().insert("path", "g")
+		.attr("class", "link")
+		.attr("d", function(d) {
+			var o = {x: source.x0, y: source.y0};
+			return diagonal({source: o, target: o});
+		});
+
+		// Transition links to their new position.
+		link.transition()
+		.duration(duration)
+		.attr("d", diagonal);
+
+		// Transition exiting nodes to the parent's new position.
+		link.exit().transition()
+		.duration(duration)
+		.attr("d", function(d) {
+			var o = {x: source.x, y: source.y};
+			return diagonal({source: o, target: o});
+		})
+		.remove();
+
+		// Stash the old positions for transition.
+		nodes.forEach(function(d) {
+			d.x0 = d.x;
+			d.y0 = d.y;
+		});
+	}
+
+//	Toggle children on click.
+	function click(d) {
+		if (d.children) {
+			d._children = d.children;
+			d.children = null;
+		} else {
+			d.children = d._children;
+			d._children = null;
+		}
+		update(d);
+	}
 }
