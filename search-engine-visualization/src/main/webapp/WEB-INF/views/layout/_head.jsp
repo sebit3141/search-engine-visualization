@@ -34,7 +34,7 @@
 <link href="resources/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
 -->
 
-<!-- JS -->
+<!-- JS (libraries)-->
 
 <!-- js.jQuery -->
 <script	src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
@@ -54,3 +54,12 @@
 <!-- js.vis.org 
 <script type="text/javascript" src="resources/js/vis/vis.min.js"></script>
 -->
+
+<!-- js.underscore -->
+<script type="text/javascript" src="resources/js/underscore/underscore-min.js"></script>
+
+<!-- js.highlight -->
+<script type="text/javascript" src="resources/js/highlight/hilitor-bold.js"></script>
+
+<!-- JS (custom statements)-->
+<script src="resources/js/scripts.js"></script>

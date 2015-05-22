@@ -4,7 +4,8 @@ import org.apache.solr.client.solrj.beans.Field;
 
 public class ResultDTO {
 
-	@Field("id")
+	//Solr uniqueKey
+	@Field("rank")
 	private Integer rank;
 	@Field
 	private String title;

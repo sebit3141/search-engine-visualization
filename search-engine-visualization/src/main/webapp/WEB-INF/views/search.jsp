@@ -4,6 +4,8 @@
 
 <%@ include file="./layout/_taglib.jsp"%>
 
+<%@ page session="false"%>
+
 <!-- Body: search results  items -->
 <div id="main" class="container">
 	<div class="cluster">
@@ -18,7 +20,7 @@
 			<li class=""><a aria-expanded="true" href="#circle"
 				data-toggle="tab">Circle</a></li>
 		</ul>
-		<div id="myTabContent" class="tab-content">
+		<div id="clusterTabContent" class="tab-content">
 			<div class="tab-pane fade active in" id="tree">
 				<br>
 				<%@ include file="./parts/tree.jsp"%>
@@ -52,7 +54,7 @@
 					<li><a href="#dropdown2" data-toggle="tab">Another action</a></li>
 				</ul></li>
 		</ul>
-		<div id="myTabContent" class="tab-content">
+		<div id="serpsTabContent" class="tab-content">
 			<div class="tab-pane fade active in" id="list">
 				<br>
 				<%@ include file="./parts/list.jsp"%>

@@ -25,6 +25,3 @@
 	ns.sev = ns.sev || {};
 	ns.sev.resultDTOListJSON = ${resultDTOListJSON};
 </script>
-
-<script src="resources/js/scripts.js"></script>
-<script src="resources/js/highlight/hilitor-bold.js"></script>
