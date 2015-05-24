@@ -13,21 +13,21 @@
 			<h2>Result Clustering<small></small></h2>
 		</div>
 		<ul class="nav nav-tabs">
-			<li class="active"><a aria-expanded="false" href="#tree"
+			<li id="tab-tree" class="active"><a aria-expanded="false" href="#tree"
 				data-toggle="tab">Tree</a></li>
-			<li class=""><a aria-expanded="true" href="#treemap"
-				data-toggle="tab">Treemap</a></li>
+			<li id="tab-radial-tree" class=""><a aria-expanded="true" href="#radial-tree"
+				data-toggle="tab">Radial Tree</a></li>
 			<li class=""><a aria-expanded="true" href="#circle"
 				data-toggle="tab">Circle</a></li>
 		</ul>
 		<div id="clusterTabContent" class="tab-content">
 			<div class="tab-pane fade active in" id="tree">
 				<br>
-				<%@ include file="./parts/tree.jsp"%>
+				<div id="draw-tree"></div>
 			</div>
-			<div class="tab-pane fade" id="treemap">
+			<div class="tab-pane fade" id="radial-tree">
 				<br>
-				<%@ include file="./parts/treemap.jsp"%>
+				<div id="draw-radial-tree"></div>				
 			</div>
 			<div class="tab-pane fade" id="circle">
 				<br>

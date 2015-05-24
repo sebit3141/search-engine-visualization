@@ -58,7 +58,17 @@ ns.sev.afterAJAX = function() {
 	//--tree
 	ns.sev.resultClusterTree = ns.sev.getClusterTree(ns.sev.resultSolrJSON);
 	ns.sev.drawD3Tree(ns.sev.resultClusterTree);
-	
+	$("li#tree").click( function(){
+		$("div#draw-tree svg").remove();
+		ns.sev.resultClusterTree = ns.sev.getClusterTree(ns.sev.resultSolrJSON);
+		ns.sev.drawD3Tree(ns.sev.resultClusterTree);
+	});
+	//--radial tree
+	$("li#tab-radial-tree").click( function(){
+		$("div#draw-radial-tree svg").remove();
+		ns.sev.resultClusterTree = ns.sev.getClusterTree(ns.sev.resultSolrJSON);
+		ns.sev.drawD3TreeRadial(ns.sev.resultClusterTree);
+	});
 	//--responsive
 	ns.sev.responsiveD3();
 }
@@ -256,7 +266,8 @@ ns.sev.graphD3 = function() {
 	}
 }
 
-//--Tree
+//--Tree Layout
+//---set input Object for tree layouts
 ns.sev.getClusterTree = function(resultSolr) {
 	//set clusterRoot
 	var clusterRoot = {"name":"", "children":[]};
@@ -282,7 +293,7 @@ ns.sev.getClusterTree = function(resultSolr) {
 	
 	return clusterRoot;
 }
-
+//---Tree
 ns.sev.drawD3Tree = function(clusterTree) {
 	var margin = {top: 20, right: 120, bottom: 20, left: 120};
 	var width = parseInt(d3.select("div.cluster").style('width'), 10);
@@ -297,18 +308,18 @@ ns.sev.drawD3Tree = function(clusterTree) {
 	
 	//-layout
 	var tree = d3.layout.tree()
-	.size([heightMargin, widthMargin]);
+		.size([heightMargin, widthMargin]);
 
 	//-accessor function
 	var diagonal = d3.svg.diagonal()
-	.projection(function(d) { return [d.y, d.x]; });
+		.projection(function(d) { return [d.y, d.x]; });
 
 	//-svg container
-	var svg = d3.select("div.tree").append("svg")
-	.style("width", width + "px")
-	.style("height", height + "px")
+	var svg = d3.select("div#draw-tree").append("svg")
+		.style("width", width + "px")
+		.style("height", height + "px")
 	.append("g")
-	.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+		.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
 	//-define root
 	root = clusterTree;
@@ -344,89 +355,89 @@ ns.sev.drawD3Tree = function(clusterTree) {
 
 		//-Update the nodes…
 		var node = svg.selectAll("g.node")
-		.data(nodes, function(d) { return d.id || (d.id = ++i); });
+			.data(nodes, function(d) { return d.id || (d.id = ++i); });
 
 		//--Enter any new nodes at the parent's previous position.
 		var nodeEnter = node.enter().append("g")
-		.attr("class", function(d) {return  (d.depth < 2) ? "node" : "node leaf";})
-		.attr("transform", function(d) { return "translate(" + source.y0 + "," + source.x0 + ")"; })
-		.on("click", clickNode);
+			.attr("class", function(d) {return  (d.depth < 2) ? "node" : "node leaf";})
+			.attr("transform", function(d) { return "translate(" + source.y0 + "," + source.x0 + ")"; })
+			.on("click", clickNode);
 
 		nodeEnter.append("circle")
-		.attr("r", 1e-6)
-		.style("fill", function(d) { return d._children ? "lightsteelblue" : "#fff"; });
+			.attr("r", 1e-6)
+			.style("fill", function(d) { return d._children ? "lightsteelblue" : "#fff"; });
 
-		//--append text: hyperlink or plain text
-		if (source.depth < 1) {
-			appendText(nodeEnter);
-		} else {
+		//--append text to child nodes: hyperlink or plain text
+		if (source.depth == 0) {
+			appendText(nodeEnter); 			
+		} else if (source.depth == 1) {
 			var ahrefToSelection = nodeEnter.append("a")
-			.attr("xlink:href", function(d) {return d.url})
-			.attr("target", "_blank");
+				.attr("xlink:href", function(d) {return d.url})
+				.attr("target", "_blank");
+			
 			appendText(ahrefToSelection);
 		}
 		function appendText(selection) { 
 			selection.append("text")
-			.attr("x", function(d) { return d.children || d._children ? -10 : 10; })
-			.attr("dy", ".35em")
-			.attr("text-anchor", function(d) { return d.children || d._children ? "end" : "start"; })
-			.text(function(d) { return (d.depth < 2) ? d.name : d.title; })
-			.style("fill-opacity", 1e-6)
-			.on("click", clickText)
-			.on("mouseover", ns.sev.tooltipShow)
-			.on("mouseout", ns.sev.tooltipHide);
-			
+				.attr("x", function(d) { return d.children || d._children ? -10 : 10; })
+				.attr("dy", ".35em")
+				.attr("text-anchor", function(d) { return d.children || d._children ? "end" : "start"; })
+				.text(function(d) { return (d.depth < 2) ? d.name : d.title; })
+				.style("fill-opacity", 1e-6)
+				.on("click", clickText)
+				.on("mouseover", ns.sev.tooltipShow)
+				.on("mouseout", ns.sev.tooltipHide);
 		}
 		
 		//--Transition nodes to their new position.
 		var nodeUpdate = node.transition()
-		.duration(duration)
-		.attr("transform", function(d) { return "translate(" + d.y + "," + d.x + ")"; });
+			.duration(duration)
+			.attr("transform", function(d) { return "translate(" + d.y + "," + d.x + ")"; });
 
 		nodeUpdate.select("circle")
-		.attr("r", 4.5)
-		.style("fill", function(d) { return d._children ? "lightsteelblue" : "#fff"; });
+			.attr("r", 4.5)
+			.style("fill", function(d) { return d._children ? "lightsteelblue" : "#fff"; });
 
 		nodeUpdate.select("text")
-		.style("fill-opacity", 1);
+			.style("fill-opacity", 1);
 
 		//--Transition exiting nodes to the parent's new position.
 		var nodeExit = node.exit().transition()
-		.duration(duration)
-		.attr("transform", function(d) { return "translate(" + source.y + "," + source.x + ")"; })
-		.remove();
+			.duration(duration)
+			.attr("transform", function(d) { return "translate(" + source.y + "," + source.x + ")"; })
+			.remove();
 
 		nodeExit.select("circle")
-		.attr("r", 1e-6);
+			.attr("r", 1e-6);
 
 		nodeExit.select("text")
-		.style("fill-opacity", 1e-6);
+			.style("fill-opacity", 1e-6);
 
 		//-Update the links…
 		var link = svg.selectAll("path.link")
-		.data(links, function(d) { return d.target.id; });
+			.data(links, function(d) { return d.target.id; });
 
 		//--Enter any new links at the parent's previous position.
 		link.enter().insert("path", "g")
-		.attr("class", "link")
-		.attr("d", function(d) {
-			var o = {x: source.x0, y: source.y0};
-			return diagonal({source: o, target: o});
-		});
+			.attr("class", "link")
+			.attr("d", function(d) {
+				var o = {x: source.x0, y: source.y0};
+				return diagonal({source: o, target: o});
+			});
 
-		//--Transition links to their new position.
+		//--expand: Transition links to their new position.
 		link.transition()
-		.duration(duration)
-		.attr("d", diagonal);
+			.duration(duration)
+			.attr("d", diagonal);
 
-		//--Transition exiting nodes to the parent's new position.
+		//--collapse: Transition exiting nodes to the parent's new position.
 		link.exit().transition()
-		.duration(duration)
-		.attr("d", function(d) {
-			var o = {x: source.x, y: source.y};
-			return diagonal({source: o, target: o});
-		})
-		.remove();
+			.duration(duration)
+			.attr("d", function(d) {
+				var o = {x: source.x, y: source.y};
+				return diagonal({source: o, target: o});
+			})
+			.remove();
 
 		//-Stash the old positions for transition.
 		nodes.forEach(function(d) {
@@ -467,9 +478,9 @@ ns.sev.drawD3Tree = function(clusterTree) {
 		if (!d.rank) {return}
 		//-function statement
         d3.select(this)
-        .attr("style", "fill: #23527c; text-decoration: underline");
+        	.attr("style", "fill: #23527c; text-decoration: underline");
 
-		update(d);
+		//update(d);
 	}
 	
 	//on.mouseOver: get infobox (only leaf nodes) 
@@ -478,27 +489,27 @@ ns.sev.drawD3Tree = function(clusterTree) {
 		if (!d.rank) {return}
 		//-function main statement
 		var foreignO = svg.append('foreignObject')
-		.attr({
-            "width": width/3,
-			"class": "svg-foreignO"
-		});
+			.attr({
+		        "width": width/3,
+				"class": "svg-foreignO"
+			});
 		//-div
 		var div = foreignO.append('xhtml:div')
-		.append('div')
-		.attr("class", "infobox");
+			.append('div')
+			.attr("class", "infobox");
 		//--h5
 		var h5 = div.append("h5")
 		h5.append("span")
-		.html(d.rank + " | ");
+			.html(d.rank + " | ");
 		h5.append("a")
-		.html(d.title);
+			.html(d.title);
 		//--p
 		div.append("p")
-		.attr("class", "text-success")
-		.html(d.displayUrl);
+			.attr("class", "text-success")
+			.html(d.displayUrl);
 		//--p
 		div.append("p")
-		.html(d.description);
+			.html(d.description);
 		
 		//set height
 		var foHeight = div[0][0].getBoundingClientRect().height;
@@ -532,11 +543,106 @@ ns.sev.drawD3Tree = function(clusterTree) {
 		//-verify leaf node
 		if (!d.rank) {return}
 		//-function main statement
-        svg.selectAll('.svg-foreignO').remove();
+        svg.selectAll('.svg-foreignO').remove()
 	}
 }
 
+//---radial Tree 
+ns.sev.drawD3TreeRadial = function(clusterTree) {
+	var root = clusterTree;
+	
+	var width = parseInt(d3.select("div.cluster").style('width'), 10);
+	var areaRatio = .6;
+	var height = width * areaRatio;
+	var radius = height * .3;
+
+	//-layout
+	var tree = d3.layout.tree()
+		.size([360, radius])
+		.separation(function(a, b) { return (a.parent == b.parent ? 1 : 2) / a.depth; });
+
+	//-accessor function
+	var diagonal = d3.svg.diagonal.radial()
+		.projection(function(d) { return [d.y, d.x / 180 * Math.PI]; });
+
+	//-svg container
+	var svg = d3.select("div#draw-radial-tree").append("svg")
+		.attr("width", width)
+		.attr("height", height)
+	.append("g")
+		.attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
+
+	//-call drawing
+	update(root);
+	
+	//-compute layout
+	function update(root) {
+		//-runs the tree layout: compute nodes and links
+		var nodes = tree.nodes(root),
+		links = tree.links(nodes);
+	
+		//-link element
+		var link = svg.selectAll(".link")
+			.data(links)
+		.enter().append("path")
+			.attr("class", "link")
+			.attr("d", diagonal);
+	
+		//-node element
+		var node = svg.selectAll(".node")
+			.data(nodes)
+		.enter().append("g")
+			.attr("class", function(d) { return d.url ? "node leaf" : "node innerNode"; })
+			.attr("transform", function(d) { return "rotate(" + (d.x - 90) + ")translate(" + d.y + ")"; });
+	
+		node.append("circle")
+			.attr("r", 4.5);
+	
+		//add text
+		var leaf = svg.selectAll("g.leaf")
+		.append("a")
+			.attr("xlink:href", function(d) { return d.url ? d.url : null; })
+			.attr("target", function(d) { return d.url ? "_blank" : null; })		
+		.append("text")
+			.attr("dy", ".31em")
+			.attr("text-anchor", function(d) { return d.x < 180 ? "start" : "end"; })
+			.attr("transform", function(d) { return d.x < 180 ? "translate(8)" : "rotate(180)translate(-8)"; })
+			.text(function(d) { return d.rank ? 
+					ns.sev.truncateString(d.title, radius * .6) : 
+						ns.sev.truncateString(d.name, radius * .6); });
+		
+		var innerNode = svg.selectAll("g.innerNode")
+		.append("text")
+			.attr("dy", ".31em")
+			.attr("text-anchor", function(d) { return d.x < 180 ? "start" : "end"; })
+			.attr("transform", function(d) { return d.x < 180 ? "translate(8)" : "rotate(180)translate(-8)"; })
+			.text(function(d) { return d.rank ? 
+					ns.sev.truncateString(d.title, radius * .6) : 
+						ns.sev.truncateString(d.name, radius * .6); });
+	}
+}
+
+//--D3 svg-text truncate 
+ns.sev.truncateString = function(textString, width) {
+		var words = textString.split(/\s+/).reverse();
+		var word;
+		var line = [];
+		while (word = words.pop()) {
+			line.push(word);
+			if (line.join(" ").length * 8 > width) {
+				line.pop();
+				line.push(" ...");
+				
+				return line.join(" ");
+			}
+		}
+		return line.join(" ");
+}
+
 //--tooltip (infobox for SERPs)
+//---arguements:
+//----d (Object) (d3 datum)
+//----i (Number) (index)
 ns.sev.tooltipShow = function(d, i) {
 	//-verify leaf node
 	if (!d.rank) {return}
@@ -569,28 +675,37 @@ ns.sev.tooltipHide = function(d, i) {
 //--D3 responsive
 ns.sev.responsiveD3 = function() {
 	var resizeTimer;
-	//resize
+	
+	//window resize
 	$(window).resize(function() {
 		clearTimeout(resizeTimer);
 		resizeTimer = setTimeout(doneResizing, 500);
 	});
 	//D3-functions
 	function doneResizing(){
+		//-remove all svg elements
 		d3.selectAll("svg").remove();
-		//update tree
-		ns.sev.resultClusterTree = ns.sev.getClusterTree(ns.sev.resultSolrJSON);
-		ns.sev.drawD3Tree(ns.sev.resultClusterTree);
 		
-		//refresh the SERPs table
+		//-update the active d3 layout
+		if ( $("div#tree").css("display") == "block" ){
+		//--update tree		
+			ns.sev.resultClusterTree = ns.sev.getClusterTree(ns.sev.resultSolrJSON);
+			ns.sev.drawD3Tree(ns.sev.resultClusterTree);
+		} else if ( $("div#radial-tree").css("display") == "block" ) {
+		//--update radial tree		
+			ns.sev.resultClusterTree = ns.sev.getClusterTree(ns.sev.resultSolrJSON);
+			ns.sev.drawD3TreeRadial(ns.sev.resultClusterTree);
+		}
+			
+		//-refresh the SERPs table
 		ns.sev.refreshSerps();
 	}
 }
 
 //--clustered SERPs
-
 //---arguements:
-//----nextPages[] (docs to add or remove from clusteredPages)
-//----boolean isAdded (true: add to clusteredPages[]; false remove from clusteredPages[])
+//----cluster (Object) (docs to add or remove from clusteredPages)
+//----isAdded (boolean) (true: add to clusteredPages[]; false remove from clusteredPages[])
 ns.sev.clusterPages = function(cluster, isToAdd) {
 	//-update the cluster labels
 	if (isToAdd) {
