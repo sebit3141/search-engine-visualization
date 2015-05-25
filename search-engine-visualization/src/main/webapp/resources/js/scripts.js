@@ -58,16 +58,24 @@ ns.sev.afterAJAX = function() {
 	//--tree
 	ns.sev.resultClusterTree = ns.sev.getClusterTree(ns.sev.resultSolrJSON);
 	ns.sev.drawD3Tree(ns.sev.resultClusterTree);
-	$("li#tree").click( function(){
+	$("li#tab-tree").click( function(){
+		//-remove special svg
 		$("div#draw-tree svg").remove();
+		//-draw layout
 		ns.sev.resultClusterTree = ns.sev.getClusterTree(ns.sev.resultSolrJSON);
 		ns.sev.drawD3Tree(ns.sev.resultClusterTree);
+		//-refresh the SERPs table
+		ns.sev.refreshSerps();
 	});
 	//--radial tree
 	$("li#tab-radial-tree").click( function(){
+		//remove special svg
 		$("div#draw-radial-tree svg").remove();
+		//-draw layout
 		ns.sev.resultClusterTree = ns.sev.getClusterTree(ns.sev.resultSolrJSON);
 		ns.sev.drawD3TreeRadial(ns.sev.resultClusterTree);
+		//-refresh the SERPs table
+		ns.sev.refreshSerps();
 	});
 	//--responsive
 	ns.sev.responsiveD3();
@@ -86,6 +94,8 @@ ns.sev.setQueryStringBold = function() {
 /*
  * -Load next SERPs (Button: load next ...)
  */
+//---arguements:
+//----e (Object) (event)
 ns.sev.loadNextPageServer = function(e) {
 	if(e != null) {
 		e.preventDefault();
@@ -268,6 +278,9 @@ ns.sev.graphD3 = function() {
 
 //--Tree Layout
 //---set input Object for tree layouts
+//---arguements:
+//----resultSolr (Object) (input data for appropriate input data for tree layout)
+//---return: clusterRoot (Object) (input data for tree layout)
 ns.sev.getClusterTree = function(resultSolr) {
 	//set clusterRoot
 	var clusterRoot = {"name":"", "children":[]};
@@ -293,7 +306,9 @@ ns.sev.getClusterTree = function(resultSolr) {
 	
 	return clusterRoot;
 }
-//---Tree
+//---tree
+//---arguements:
+//----clusterTree (Object) (input data for define nodes and links)
 ns.sev.drawD3Tree = function(clusterTree) {
 	var margin = {top: 20, right: 120, bottom: 20, left: 120};
 	var width = parseInt(d3.select("div.cluster").style('width'), 10);
@@ -359,35 +374,36 @@ ns.sev.drawD3Tree = function(clusterTree) {
 
 		//--Enter any new nodes at the parent's previous position.
 		var nodeEnter = node.enter().append("g")
-			.attr("class", function(d) {return  (d.depth < 2) ? "node" : "node leaf";})
+			.attr("class", function(d) {return  d.url ? "node leaf" : "node innerNode";})
 			.attr("transform", function(d) { return "translate(" + source.y0 + "," + source.x0 + ")"; })
-			.on("click", clickNode);
+			.on("click", toggleNodeOnClick);
 
 		nodeEnter.append("circle")
 			.attr("r", 1e-6)
 			.style("fill", function(d) { return d._children ? "lightsteelblue" : "#fff"; });
 
 		//--append text to child nodes: hyperlink or plain text
-		if (source.depth == 0) {
-			appendText(nodeEnter); 			
-		} else if (source.depth == 1) {
-			var ahrefToSelection = nodeEnter.append("a")
-				.attr("xlink:href", function(d) {return d.url})
-				.attr("target", "_blank");
-			
-			appendText(ahrefToSelection);
-		}
-		function appendText(selection) { 
-			selection.append("text")
-				.attr("x", function(d) { return d.children || d._children ? -10 : 10; })
-				.attr("dy", ".35em")
-				.attr("text-anchor", function(d) { return d.children || d._children ? "end" : "start"; })
-				.text(function(d) { return (d.depth < 2) ? d.name : d.title; })
-				.style("fill-opacity", 1e-6)
-				.on("click", clickText)
-				.on("mouseover", ns.sev.tooltipShow)
-				.on("mouseout", ns.sev.tooltipHide);
-		}
+		var leaf = svg.selectAll("g.leaf")
+		.append("a")
+			.attr("xlink:href", function(d) { return d.url; })
+			.attr("target", function(d) { return "_blank"; })		
+		.append("text")
+			.attr("x", function(d) { return d.children || d._children ? -10 : 10; })
+			.attr("dy", ".35em")
+			.attr("text-anchor", function(d) { return d.children || d._children ? "end" : "start"; })
+			.style("fill-opacity", 1e-6)
+			.text(function(d) { return d.title; })
+			.on("click", ns.sev.ahrefFocusOnClick)
+			.on("mouseover", ns.sev.tooltipShow)
+			.on("mouseout", ns.sev.tooltipHide);
+		
+		var innerNode = svg.selectAll("g.innerNode")
+		.append("text")
+			.attr("x", function(d) { return d.children || d._children ? -10 : 10; })
+			.attr("dy", ".35em")
+			.attr("text-anchor", function(d) { return d.children || d._children ? "end" : "start"; })
+			.style("fill-opacity", 1e-6)
+			.text(function(d) { return d.name; })
 		
 		//--Transition nodes to their new position.
 		var nodeUpdate = node.transition()
@@ -447,7 +463,7 @@ ns.sev.drawD3Tree = function(clusterTree) {
 	}
 
 	//on.click: toggle children  
-	function clickNode(d) {
+	function toggleNodeOnClick(d) {
 		if (d.children) {
 		//-collapse
 			d._children = d.children;
@@ -470,17 +486,6 @@ ns.sev.drawD3Tree = function(clusterTree) {
 			}
 		}
 		update(d);
-	}
-	
-	//on.click: tag the text (only leaf nodes) 
-	function clickText(d) {
-		//-verify leaf node
-		if (!d.rank) {return}
-		//-function statement
-        d3.select(this)
-        	.attr("style", "fill: #23527c; text-decoration: underline");
-
-		//update(d);
 	}
 	
 	//on.mouseOver: get infobox (only leaf nodes) 
@@ -548,6 +553,8 @@ ns.sev.drawD3Tree = function(clusterTree) {
 }
 
 //---radial Tree 
+//---arguements:
+//----clusterTree (Object) (input data for define nodes and links)
 ns.sev.drawD3TreeRadial = function(clusterTree) {
 	var root = clusterTree;
 	
@@ -581,14 +588,14 @@ ns.sev.drawD3TreeRadial = function(clusterTree) {
 		var nodes = tree.nodes(root),
 		links = tree.links(nodes);
 	
-		//-link element
+		//-define link elements
 		var link = svg.selectAll(".link")
 			.data(links)
 		.enter().append("path")
 			.attr("class", "link")
 			.attr("d", diagonal);
 	
-		//-node element
+		//-define node elements
 		var node = svg.selectAll(".node")
 			.data(nodes)
 		.enter().append("g")
@@ -598,31 +605,44 @@ ns.sev.drawD3TreeRadial = function(clusterTree) {
 		node.append("circle")
 			.attr("r", 4.5);
 	
-		//add text
+		//--add text to node elements
 		var leaf = svg.selectAll("g.leaf")
 		.append("a")
-			.attr("xlink:href", function(d) { return d.url ? d.url : null; })
-			.attr("target", function(d) { return d.url ? "_blank" : null; })		
+			.attr("xlink:href", function(d) { return d.url; })
+			.attr("target", function(d) { return "_blank"; })		
 		.append("text")
 			.attr("dy", ".31em")
 			.attr("text-anchor", function(d) { return d.x < 180 ? "start" : "end"; })
 			.attr("transform", function(d) { return d.x < 180 ? "translate(8)" : "rotate(180)translate(-8)"; })
-			.text(function(d) { return d.rank ? 
-					ns.sev.truncateString(d.title, radius * .6) : 
-						ns.sev.truncateString(d.name, radius * .6); });
+			.text(function(d) { return ns.sev.truncateString(d.title, radius * .7); })
+			.on("click", ns.sev.ahrefFocusOnClick)
+			.on("mouseover", ns.sev.tooltipShow)
+			.on("mouseout", ns.sev.tooltipHide);
 		
 		var innerNode = svg.selectAll("g.innerNode")
 		.append("text")
 			.attr("dy", ".31em")
 			.attr("text-anchor", function(d) { return d.x < 180 ? "start" : "end"; })
 			.attr("transform", function(d) { return d.x < 180 ? "translate(8)" : "rotate(180)translate(-8)"; })
-			.text(function(d) { return d.rank ? 
-					ns.sev.truncateString(d.title, radius * .6) : 
-						ns.sev.truncateString(d.name, radius * .6); });
+			.text(function(d) { return ns.sev.truncateString(d.name, radius * .5); });
 	}
 }
 
+//--D3 ahref focus on click
+//---arguements:
+//----d (Object) (d3 datum)
+ns.sev.ahrefFocusOnClick = function(d) {
+	//-verify leaf node
+	if (!d.url) {return}
+	//-function statement
+    d3.select(this)
+    	.attr("style", "fill: #23527c; text-decoration: underline");
+}
+
 //--D3 svg-text truncate 
+//---arguements:
+//----textString (String) (full text string)
+//----width (Number) (max width of textString)
 ns.sev.truncateString = function(textString, width) {
 		var words = textString.split(/\s+/).reverse();
 		var word;
@@ -668,6 +688,10 @@ ns.sev.tooltipShow = function(d, i) {
     }).tooltip('show');
 }
 
+//--remove/hide tooltip (infobox)
+//---arguements:
+//----d (Object) (d3 datum)
+//----i (Number) (index)
 ns.sev.tooltipHide = function(d, i) {
     $(this).tooltip('hide');
 }

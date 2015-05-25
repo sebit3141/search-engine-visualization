@@ -280,7 +280,7 @@ div#draw-radial-tree a {
 	text-decoration: none;
 }
 
-div#draw-tree a:hover, div#draw-tree a:focus
+div#draw-tree a:hover, div#draw-tree a:focus,
 div#draw-radial-tree a:hover, div#draw-radial-tree a:focus {
 	fill: #23527c;
 	text-decoration: underline;
