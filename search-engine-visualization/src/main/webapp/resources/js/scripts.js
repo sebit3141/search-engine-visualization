@@ -283,8 +283,9 @@ ns.sev.graphD3 = function() {
 //---return: clusterRoot (Object) (input data for tree layout)
 ns.sev.getClusterTree = function(resultSolr) {
 	//set clusterRoot
-	var clusterRoot = {"name":"", "children":[]};
+	var clusterRoot = {"name":"", "children":[], "docs":[]};
 	clusterRoot.name = resultSolr.response.docs[0].query;
+	clusterRoot.docs = resultSolr.response.docs;
 	resultSolr.clusters.forEach(function(clustersItem) {
 		//set clusterLabel
 		var clusterLabel = {"name":"", "children":[], "docs":[]};
@@ -380,7 +381,21 @@ ns.sev.drawD3Tree = function(clusterTree) {
 
 		nodeEnter.append("circle")
 			.attr("r", 1e-6)
-			.style("fill", function(d) { return d._children ? "lightsteelblue" : "#fff"; });
+			.attr("style", function(d) { 
+	    		var h = 120,s,l = .80;
+	    		var colorStroke, colorFill;
+
+	    		if (d.docs) {
+	    			s = ( (root.docs.length + 1) - d.docs[0] ) / 100;
+	    			colorStroke = d3.hsl(h,s,l).toString();
+	    			d._children ? colorFill = colorStroke : colorFill = "#fff";
+	    		} else if (d.rank) {
+	    			s =  ( (root.docs.length + 1) - d.rank ) / 100;
+	    			colorStroke = d3.hsl(h,s,l).toString();
+					colorFill = "#fff";
+	    		}
+				return ("stroke: " + colorStroke + "; fill: " + colorFill); 
+			});
 
 		//--append text to child nodes: hyperlink or plain text
 		var leaf = svg.selectAll("g.leaf")
@@ -404,6 +419,8 @@ ns.sev.drawD3Tree = function(clusterTree) {
 			.attr("text-anchor", function(d) { return d.children || d._children ? "end" : "start"; })
 			.style("fill-opacity", 1e-6)
 			.text(function(d) { return d.name; })
+			.on("mouseover", ns.sev.tooltipShow)
+			.on("mouseout", ns.sev.tooltipHide);
 		
 		//--Transition nodes to their new position.
 		var nodeUpdate = node.transition()
@@ -412,7 +429,21 @@ ns.sev.drawD3Tree = function(clusterTree) {
 
 		nodeUpdate.select("circle")
 			.attr("r", 4.5)
-			.style("fill", function(d) { return d._children ? "lightsteelblue" : "#fff"; });
+			.attr("style", function(d) { 
+	    		var h = 120,s,l = .80;
+	    		var colorStroke, colorFill;
+
+	    		if (d.docs) {
+	    			s = ( (root.docs.length + 1) - d.docs[0] ) / 100;
+	    			colorStroke = d3.hsl(h,s,l).toString();
+	    			d._children ? colorFill = colorStroke : colorFill = "#fff";
+	    		} else if (d.rank) {
+	    			s =  ( (root.docs.length + 1) - d.rank ) / 100;
+	    			colorStroke = d3.hsl(h,s,l).toString();
+					colorFill = "#fff";
+	    		}
+				return ("stroke: " + colorStroke + "; fill: " + colorFill); 
+			});
 
 		nodeUpdate.select("text")
 			.style("fill-opacity", 1);
@@ -439,6 +470,15 @@ ns.sev.drawD3Tree = function(clusterTree) {
 			.attr("d", function(d) {
 				var o = {x: source.x0, y: source.y0};
 				return diagonal({source: o, target: o});
+			})
+			.attr("style", function(d) { 
+				    		var h = 120,s,l = .80;
+				    		if (d.target.docs) {
+				    			s = ( (root.docs.length + 1) - d.target.docs[0] ) / 100;
+				    		} else if (d.target.rank) {
+				    			s =  ( (root.docs.length + 1) - d.target.rank ) / 100;
+				    		}
+			    			return ("stroke: " + d3.hsl(h,s,l).toString()); 
 			});
 
 		//--expand: Transition links to their new position.
@@ -593,7 +633,16 @@ ns.sev.drawD3TreeRadial = function(clusterTree) {
 			.data(links)
 		.enter().append("path")
 			.attr("class", "link")
-			.attr("d", diagonal);
+			.attr("d", diagonal)
+			.attr("style", function(d) { 
+	    		var h = 120,s,l = .80;
+	    		if (d.target.docs) {
+	    			s = ( (root.docs.length + 1) - d.target.docs[0] ) / 100;
+	    		} else if (d.target.rank) {
+	    			s =  ( (root.docs.length + 1) - d.target.rank ) / 100;
+	    		}
+				return ("stroke: " + d3.hsl(h,s,l).toString()); 
+			});
 	
 		//-define node elements
 		var node = svg.selectAll(".node")
@@ -603,7 +652,20 @@ ns.sev.drawD3TreeRadial = function(clusterTree) {
 			.attr("transform", function(d) { return "rotate(" + (d.x - 90) + ")translate(" + d.y + ")"; });
 	
 		node.append("circle")
-			.attr("r", 4.5);
+			.attr("r", 4.5)
+			.attr("style", function(d) { 
+	    		var h = 120,s,l = .80;
+	    		var colorStroke;
+	
+	    		if (d.docs) {
+	    			s = ( (root.docs.length + 1) - d.docs[0] ) / 100;
+	    			colorStroke = d3.hsl(h,s,l).toString();
+	    		} else if (d.rank) {
+	    			s =  ( (root.docs.length + 1) - d.rank ) / 100;
+	    			colorStroke = d3.hsl(h,s,l).toString();
+	    		}
+				return ("stroke: " + colorStroke); 
+			});
 	
 		//--add text to node elements
 		var leaf = svg.selectAll("g.leaf")
@@ -624,7 +686,9 @@ ns.sev.drawD3TreeRadial = function(clusterTree) {
 			.attr("dy", ".31em")
 			.attr("text-anchor", function(d) { return d.x < 180 ? "start" : "end"; })
 			.attr("transform", function(d) { return d.x < 180 ? "translate(8)" : "rotate(180)translate(-8)"; })
-			.text(function(d) { return ns.sev.truncateString(d.name, radius * .5); });
+			.text(function(d) { return ns.sev.truncateString(d.name, radius * .5); })
+			.on("mouseover", ns.sev.tooltipShow)
+			.on("mouseout", ns.sev.tooltipHide);
 	}
 }
 
@@ -664,20 +728,28 @@ ns.sev.truncateString = function(textString, width) {
 //----d (Object) (d3 datum)
 //----i (Number) (index)
 ns.sev.tooltipShow = function(d, i) {
-	//-verify leaf node
-	if (!d.rank) {return}
 	//-function main statement
 	var html = '';
 	var templ = '<div class="tooltip" role="tooltip"><div class="tooltip-inner"></div></div>';
 	
-	//set html 
-	html += "<h5>";
-		html += "<span>" + d.rank + " | </span>";
-		html += "<a href=''> " + d.title + " </a>";
-	html += "</h5>";
-	html += "<p class='text-success'>" + d.displayUrl + "</p>";
-	html += "<p>" + d.description + "</p>";
-
+	//-verify nodes to set html 
+	if (d.depth == 0) {
+	//--root
+		html += "<p>Search keyword: <span class='text-success'><strong>" + d.name + "</strong></span></p>";
+	} else if (d.depth == 1) {
+	//--inner node
+		html += "<h5>Category: <span class='text-success'><strong>" + d.name + "</strong></span></h5>";
+		html += "<p><span class='text-success'><strong>" + d.docs.length + "</strong></span> result pages</p>";
+	} else if (d.depth == 2) {
+	//--leaf
+		html += "<h5>";
+			html += "<span>" + d.rank + " | </span>";
+			html += "<a href=''> " + d.title + " </a>";
+		html += "</h5>";
+		html += "<p class='text-success'>" + d.displayUrl + "</p>";
+		html += "<p>" + d.description + "</p>";
+	}
+	
 	//set tooltip options
     $(this).tooltip({
         title: html,
