@@ -81,7 +81,7 @@ ns.sev.afterAJAX = function() {
 	//force graph
 	$("li#tab-graph").click( function(){
 		//remove special svg
-		$("div#draw-graph svg").remove();
+		$("div#draw-force-graph svg").remove();
 		//-draw layout
 		ns.sev.resultLinksNodesForceJSON = ns.sev.getLinksNodesForceJSON(ns.sev.resultSolrJSON); 		
 		ns.sev.drawD3ForceGraph(ns.sev.resultLinksNodesForceJSON);
@@ -689,13 +689,19 @@ ns.sev.graphD3 = function() {
 ns.sev.getLinksNodesForceJSON = function(resultSolr) {
 	var links = [];
 	var nodes = {};
-	var forceRoot = {"name":"", "links":[], "nodes":{}};
+	var forceRoot = {"name":"", "docs":"", "links":[], "nodes":{}};
+	var clusterDocs = {};
 	
 	//-set root 
 	forceRoot.name = resultSolr.response.docs[0].query;
+	forceRoot.docs = resultSolr.response.docs;
 
 	//--set links
 	resultSolr.clusters.forEach(function(clustersItem) {
+		//---set clusterDocs for cluster nodes
+		var label = clustersItem.labels[0];
+		clusterDocs[label] = {name: label, docs: clustersItem.docs};
+		//---set links
 		clustersItem.docs.forEach(function(docsItem) {
 			var linkObject = {"source":"", "target":""};
 			linkObject.source = clustersItem.labels[0];
@@ -715,14 +721,20 @@ ns.sev.getLinksNodesForceJSON = function(resultSolr) {
 			//-set name for links and nodes
 			nodes[source] = {name: source};
 			link.source = nodes[source];
-			//-set leaf attributes
+			//-set node attributes
 			if ( !isNaN(source) ) {
+			//--leaf 
 				nodes[source].rank = resultSolr.response.docs[source-1].rank;
 				nodes[source].title = resultSolr.response.docs[source-1].title;
 				nodes[source].description = resultSolr.response.docs[source-1].description;
 				nodes[source].displayUrl = resultSolr.response.docs[source-1].displayUrl;
 				nodes[source].url = resultSolr.response.docs[source-1].url;
 				nodes[source].query = resultSolr.response.docs[source-1].query;
+				nodes[source].node = "leaf";
+			} else {
+			//--innerNode
+				nodes[source].node = "innerNode";
+				nodes[source].docs = clusterDocs[source].docs;
 			}
 		} else {
 			//-set name for links
@@ -735,14 +747,20 @@ ns.sev.getLinksNodesForceJSON = function(resultSolr) {
 			//-set name for links and nodes
 			nodes[target] = {name: target};
 			link.target = nodes[target];
-			//-set leaf attributes
+			//-set node attributes
 			if ( !isNaN(target) ) {
+			//--leaf 
 				nodes[target].rank = resultSolr.response.docs[target-1].rank;
 				nodes[target].title = resultSolr.response.docs[target-1].title;
 				nodes[target].description = resultSolr.response.docs[target-1].description;
 				nodes[target].displayUrl = resultSolr.response.docs[target-1].displayUrl;
 				nodes[target].url = resultSolr.response.docs[target-1].url;
 				nodes[target].query = resultSolr.response.docs[target-1].query;
+				nodes[target].node = "leaf";
+			} else {
+			//--innerNode
+				nodes[target].node = "innerNode";
+				nodes[target].docs = clusterDocs[target].docs;
 			}
 		} else {
 			//-set name for links
@@ -761,7 +779,7 @@ ns.sev.drawD3ForceGraph = function(linksNodesForceJSON) {
 	var width = parseInt(d3.select("div.cluster").style('width'), 10);
 	var areaRatio = .6;
 	var height = width * areaRatio;
-	var radius = 8;
+	var radius = 12;
 	
 	var root = linksNodesForceJSON;
 
@@ -784,7 +802,7 @@ ns.sev.drawD3ForceGraph = function(linksNodesForceJSON) {
 		.start();
 
 	//-set svg container
-	var svg = d3.select("div#draw-graph").append("svg")
+	var svg = d3.select("div#draw-force-graph").append("svg")
 	    .attr("width", width)
 	    .attr("height", height);
 
@@ -792,24 +810,47 @@ ns.sev.drawD3ForceGraph = function(linksNodesForceJSON) {
 	var link = svg.selectAll(".link")
 	    .data(force.links())
 	  .enter().append("line")
-	    .attr("class", "link");
+	    .attr("class", "link")
+   	    .attr('fill-opacity', 0.3)
+	    .style("stroke-width", "1.5px")
+	    .style("stroke", "#ccc");
 
 	//-set node
 	var node = svg.selectAll(".node")
 	    .data(force.nodes())
 	  .enter().append("g")
 	    .attr("class", "node")
-	    .on("mouseover", mouseover)
-	    .on("mouseout", mouseout)
+	    .on("mouseover.effect", mouseover)
+	    .on("mouseout.effect", mouseout)
+	    .on("click", openUrlOnClick)
 	    .call(force.drag);
-
+	
+	//--circle
 	node.append("circle")
-	    .attr("r", radius);
-
+	    .attr("r", function(d) { return (d.rank ? radius : radius * 1.5); })
+	    .attr('fill-opacity', 0.5)
+	    .attr('fill', function(d) { 
+    		var h = 120,s,l = .80;
+    		var colorFill;
+    		if (d.rank) {
+    			s =  ( (root.docs.length + 1) - d.rank ) / 100;
+    			colorFill = d3.hsl(h,s,l).toString();
+    			return colorFill; 
+    		} else {
+    			return "lightsteelblue"
+    		}
+		})
+		.on("mouseover.tooltip", ns.sev.tooltipShow)
+		.on("mouseout.tooltip", ns.sev.tooltipHide);
+	
+	//--text
 	node.append("text")
-	    .attr("x", 12)
+	    .attr("x", 0)
 	    .attr("dy", ".35em")
-	    .text(function(d) { return d.name; });
+	    .style("text-anchor", "middle")
+	    .text(function(d) { return d.name; })
+	    .on("mouseover.tooltip", ns.sev.tooltipShow)
+		.on("mouseout.tooltip", ns.sev.tooltipHide);
 
 	//-run the force layout
 	function tick() {
@@ -834,15 +875,24 @@ ns.sev.drawD3ForceGraph = function(linksNodesForceJSON) {
 
 	//-mouseover
 	function mouseover() {
-	  d3.select(this).select("circle").transition()
-	      .duration(750)
-	      .attr("r", 16);
+	  d3.select(this).select("circle")
+	  	//.transition().duration(750)
+	  	.attr('fill-opacity', 1);
+	  	//.attr("r", radius*3);
 	}
 
 	function mouseout() {
-	  d3.select(this).select("circle").transition()
-	      .duration(750)
-	      .attr("r", 8);
+	  d3.select(this).select("circle")
+	  	//.transition().duration(750)
+	  	 .attr('fill-opacity', 0.5);
+	  	//.attr("r", function(d) { return (d.rank ? radius : radius * 1.5); });
+	}
+	
+	function openUrlOnClick(d) {
+		//-verify leaf node
+		if (!d.url) {return}
+		//-function statement
+	    window.open(d.url);
 	}
 }
 
@@ -887,14 +937,14 @@ ns.sev.tooltipShow = function(d, i) {
 	var templ = '<div class="tooltip" role="tooltip"><div class="tooltip-inner"></div></div>';
 	
 	//-verify nodes to set html 
-	if (d.depth == 0) {
+	if ( d.depth == 0 ) {
 	//--root
 		html += "<p>Search keyword: <span class='text-success'><strong>" + d.name + "</strong></span></p>";
-	} else if (d.depth == 1) {
+	} else if ( d.depth == 1 || d.node == "innerNode" ) {
 	//--inner node
 		html += "<h5>Category: <span class='text-success'><strong>" + d.name + "</strong></span></h5>";
 		html += "<p><span class='text-success'><strong>" + d.docs.length + "</strong></span> result pages</p>";
-	} else if (d.depth == 2) {
+	} else if ( d.depth == 2 || d.node == "leaf" ) {
 	//--leaf
 		html += "<h5>";
 			html += "<span>" + d.rank + " | </span>";

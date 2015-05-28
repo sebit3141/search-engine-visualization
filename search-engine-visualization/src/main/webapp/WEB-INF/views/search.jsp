@@ -40,7 +40,7 @@
 			</div>
 			<div class="tab-pane fade" id="graph">
 				<br>
-				<div id="draw-graph"></div>
+				<div id="draw-force-graph"></div>
 			</div>
 			<div class="tab-pane fade" id="circle">
 				<br>
