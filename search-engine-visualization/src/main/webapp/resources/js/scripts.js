@@ -11,7 +11,8 @@ ns.sev.clusters = [];
 //---Solr
 ns.sev.solrURL = "http://localhost:5000/sevCore/clustering?wt=json";
 ns.sev.resultSolrJSON = {};
-ns.sev.resultClusterTree = {};
+ns.sev.resultClusterTreeJSON = {};
+ns.sev.resultLinksNodesForceJSON = {};
 
 /*
  * -JS function auto calls
@@ -56,14 +57,14 @@ ns.sev.afterAJAX = function() {
 	//$("#li_graph").click(ns.sev.graphD3());
 	ns.sev.graphD3();
 	//--tree
-	ns.sev.resultClusterTree = ns.sev.getClusterTree(ns.sev.resultSolrJSON);
-	ns.sev.drawD3Tree(ns.sev.resultClusterTree);
+	ns.sev.resultClusterTreeJSON = ns.sev.getClusterTreeJSON(ns.sev.resultSolrJSON);
+	ns.sev.drawD3Tree(ns.sev.resultClusterTreeJSON);
 	$("li#tab-tree").click( function(){
 		//-remove special svg
 		$("div#draw-tree svg").remove();
 		//-draw layout
-		ns.sev.resultClusterTree = ns.sev.getClusterTree(ns.sev.resultSolrJSON);
-		ns.sev.drawD3Tree(ns.sev.resultClusterTree);
+		ns.sev.resultClusterTreeJSON = ns.sev.getClusterTreeJSON(ns.sev.resultSolrJSON);
+		ns.sev.drawD3Tree(ns.sev.resultClusterTreeJSON);
 		//-refresh the SERPs table
 		ns.sev.refreshSerps();
 	});
@@ -72,18 +73,18 @@ ns.sev.afterAJAX = function() {
 		//remove special svg
 		$("div#draw-radial-tree svg").remove();
 		//-draw layout
-		ns.sev.resultClusterTree = ns.sev.getClusterTree(ns.sev.resultSolrJSON);
-		ns.sev.drawD3TreeRadial(ns.sev.resultClusterTree);
+		ns.sev.resultClusterTreeJSON = ns.sev.getClusterTreeJSON(ns.sev.resultSolrJSON);
+		ns.sev.drawD3TreeRadial(ns.sev.resultClusterTreeJSON);
 		//-refresh the SERPs table
 		ns.sev.refreshSerps();
 	});
-	//graph
+	//force graph
 	$("li#tab-graph").click( function(){
 		//remove special svg
 		$("div#draw-graph svg").remove();
 		//-draw layout
-		ns.sev.resultClusterTree = ns.sev.getClusterTree(ns.sev.resultSolrJSON);
-		ns.sev.drawD3Graph(ns.sev.resultClusterTree);
+		ns.sev.resultLinksNodesForceJSON = ns.sev.getLinksNodesForceJSON(ns.sev.resultSolrJSON); 		
+		ns.sev.drawD3ForceGraph(ns.sev.resultLinksNodesForceJSON);
 		//-refresh the SERPs table
 		ns.sev.refreshSerps();
 	});
@@ -199,9 +200,9 @@ ns.sev.finishRefresh = function() {
 //--tree layout
 //---set input Object for tree layouts
 //---arguements:
-//----resultSolr (Object) (input data for appropriate input data for tree layout)
+//----resultSolr (Object) (input data for appropriate input data for transformation)
 //---return: clusterRoot (Object) (input data for tree layout)
-ns.sev.getClusterTree = function(resultSolr) {
+ns.sev.getClusterTreeJSON = function(resultSolr) {
 	//set clusterRoot
 	var clusterRoot = {"name":"", "children":[], "docs":[]};
 	clusterRoot.name = resultSolr.response.docs[0].query;
@@ -680,39 +681,98 @@ ns.sev.graphD3 = function() {
 	}
 }
 
-ns.sev.drawD3Graph = function(clusterTree) {
+//--force layout
+//---set input Object for force layouts
+//---arguements:
+//----resultSolr (Object) (input data for appropriate input data transformation)
+//---return: forceRoot (Object) (input data for force layout)
+ns.sev.getLinksNodesForceJSON = function(resultSolr) {
+	var links = [];
+	var nodes = {};
+	var forceRoot = {"name":"", "links":[], "nodes":{}};
+	
+	//-set root 
+	forceRoot.name = resultSolr.response.docs[0].query;
+
+	//--set links
+	resultSolr.clusters.forEach(function(clustersItem) {
+		clustersItem.docs.forEach(function(docsItem) {
+			var linkObject = {"source":"", "target":""};
+			linkObject.source = clustersItem.labels[0];
+			linkObject.target = docsItem;
+			links.push(linkObject);
+		})
+	});
+	forceRoot.links = links;
+	
+	//--set nodes
+	var source = "";
+	var target = "";
+	links.forEach(function(link) {
+		//link.source = nodes[link.source] || (nodes[link.source] = {name: link.source});
+		source = link.source;
+		if (  nodes[source] === undefined ) {
+			//-set name for links and nodes
+			nodes[source] = {name: source};
+			link.source = nodes[source];
+			//-set leaf attributes
+			if ( !isNaN(source) ) {
+				nodes[source].rank = resultSolr.response.docs[source-1].rank;
+				nodes[source].title = resultSolr.response.docs[source-1].title;
+				nodes[source].description = resultSolr.response.docs[source-1].description;
+				nodes[source].displayUrl = resultSolr.response.docs[source-1].displayUrl;
+				nodes[source].url = resultSolr.response.docs[source-1].url;
+				nodes[source].query = resultSolr.response.docs[source-1].query;
+			}
+		} else {
+			//-set name for links
+			link.source = nodes[source]; 
+		}
+
+		//link.target = nodes[link.target] || (nodes[link.target] = {name: link.target});
+		target = link.target;
+		if (  nodes[target] === undefined ) {
+			//-set name for links and nodes
+			nodes[target] = {name: target};
+			link.target = nodes[target];
+			//-set leaf attributes
+			if ( !isNaN(target) ) {
+				nodes[target].rank = resultSolr.response.docs[target-1].rank;
+				nodes[target].title = resultSolr.response.docs[target-1].title;
+				nodes[target].description = resultSolr.response.docs[target-1].description;
+				nodes[target].displayUrl = resultSolr.response.docs[target-1].displayUrl;
+				nodes[target].url = resultSolr.response.docs[target-1].url;
+				nodes[target].query = resultSolr.response.docs[target-1].query;
+			}
+		} else {
+			//-set name for links
+			link.target = nodes[target];
+		}
+	});
+	forceRoot.nodes = nodes;
+	
+	return forceRoot;
+}
+
+//--- force graph
+//---arguements:
+//----linksNodesForceJSON (Object) (input data for define nodes and links)
+ns.sev.drawD3ForceGraph = function(linksNodesForceJSON) {
 	var width = parseInt(d3.select("div.cluster").style('width'), 10);
 	var areaRatio = .6;
 	var height = width * areaRatio;
 	var radius = 8;
 	
-	var links = [];
-	var nodes = {};
-	var root = clusterTree;
-	
-	//-set links
-	root.children.forEach(function(clusterItem) {
-		clusterItem.docs.forEach(function(docItem) {
-			var linkObject = {"source": "", "target": ""};
-			linkObject.source = clusterItem.name;
-			linkObject.target = docItem;
-			links.push(linkObject);
-		})
-	});
-	
-	//-set nodes the distinct nodes from the links.
-	links.forEach(function(link) {
-	  link.source = nodes[link.source] || (nodes[link.source] = {name: link.source});
-	  link.target = nodes[link.target] || (nodes[link.target] = {name: link.target});
-	});
+	var root = linksNodesForceJSON;
 
 	//-set layout
 	var force = d3.layout.force()
-	    .nodes(d3.values(nodes))
-	    .links(links)
+	    .nodes(d3.values(root.nodes))
+	    .links(root.links)
 	    .size([width, height])
 	    .on("tick", tick);
 
+	//--set force parameter 
 	force
 		//.linkStrength(1) //0..1 (1)
 		.friction(0.6) //0..1 (0.9) velocity decay
@@ -879,16 +939,16 @@ ns.sev.responsiveD3 = function() {
 		//-update the active d3 layout
 		if ( $("div#tree").css("display") == "block" ){
 		//--update tree		
-			ns.sev.resultClusterTree = ns.sev.getClusterTree(ns.sev.resultSolrJSON);
-			ns.sev.drawD3Tree(ns.sev.resultClusterTree);
+			ns.sev.resultClusterTreeJSON = ns.sev.getClusterTreeJSON(ns.sev.resultSolrJSON);
+			ns.sev.drawD3Tree(ns.sev.resultClusterTreeJSON);
 		} else if ( $("div#radial-tree").css("display") == "block" ) {
 		//--update radial tree		
-			ns.sev.resultClusterTree = ns.sev.getClusterTree(ns.sev.resultSolrJSON);
-			ns.sev.drawD3TreeRadial(ns.sev.resultClusterTree);
+			ns.sev.resultClusterTreeJSON = ns.sev.getClusterTreeJSON(ns.sev.resultSolrJSON);
+			ns.sev.drawD3TreeRadial(ns.sev.resultClusterTreeJSON);
 		} else if ( $("div#graph").css("display") == "block" ) {
-		//--update graph	
-			ns.sev.resultClusterTree = ns.sev.getClusterTree(ns.sev.resultSolrJSON);
-			ns.sev.drawD3Graph(ns.sev.resultClusterTree);
+		//--update force graph	
+			ns.sev.resultLinksNodesForceJSON = ns.sev.getLinksNodesForceJSON(ns.sev.resultSolrJSON); 		
+			ns.sev.drawD3ForceGraph(ns.sev.resultLinksNodesForceJSON);
 		}
 			
 		//-refresh the SERPs table
