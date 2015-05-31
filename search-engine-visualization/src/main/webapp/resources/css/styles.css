@@ -281,10 +281,14 @@ div.tooltip-inner {
 
 /* -force layout */
 /* --force graph */
-div#draw-force-graph .node {
+div#draw-force-graph .node.leaf {
 	cursor: pointer;
 }
 
 div#draw-force-graph .node.leaf circle {
 	cursor: default;
+}
+/* --force search graph */
+div#draw-force-search-graph .node {
+	cursor: pointer;
 }
