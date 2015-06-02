@@ -13,6 +13,7 @@ ns.sev.solrURL = "http://localhost:5000/sevCore/clustering?wt=json";
 ns.sev.resultSolrJSON = {};
 ns.sev.resultClusterTreeJSON = {};
 ns.sev.resultLinksNodesForceJSON = {};
+ns.sev.resultClusterNodesJSON = {};
 
 /*
  * -JS function auto calls
@@ -100,8 +101,8 @@ ns.sev.afterAJAX = function() {
 		//remove special svg
 		$("div#draw-force-cluster-nodes svg").remove();
 		//-draw layout
-		ns.sev.resultClusterTreeJSON = ns.sev.getClusterTreeJSON(ns.sev.resultSolrJSON);
-		ns.sev.drawD3ForceClusterNodes(ns.sev.resultClusterTreeJSON);
+		ns.sev.resultClusterNodesJSON = ns.sev.getClusterNodesJSON(ns.sev.resultSolrJSON);
+		ns.sev.drawD3ForceClusterNodes(ns.sev.resultClusterNodesJSON);
 		//-refresh the SERPs table
 		ns.sev.refreshSerps();
 	});
@@ -329,7 +330,7 @@ ns.sev.drawD3Tree = function(clusterTree) {
 	    		var h = 120,s,l = .80;
 	    		var colorStroke;
 	    		if (d.rank) {
-	    			s =  ( (root.docs.length + 1) - d.rank ) / 100;
+	    			s =  ( (root.docs.length + 1) - d.rank ) / root.docs.length;
 	    			colorStroke = d3.hsl(h,s,l).toString();
 	    			return colorStroke; 
 	    		}
@@ -400,7 +401,7 @@ ns.sev.drawD3Tree = function(clusterTree) {
 	    		var h = 120,s,l = .80;
 	    		var colorStroke;
 	    		if (d.target.rank) {
-	    			s =  ( (root.docs.length + 1) - d.target.rank ) / 100;
+	    			s =  ( (root.docs.length + 1) - d.target.rank ) / root.docs.length;
 		    		colorStroke = d3.hsl(h,s,l).toString();
 					return colorStroke; 
 	    		}
@@ -564,7 +565,7 @@ ns.sev.drawD3TreeRadial = function(clusterTree) {
 	    		var h = 120,s,l = .80;
 	    		var colorStroke;
 	    		if (d.target.rank) {
-	    			s =  ( (root.docs.length + 1) - d.target.rank ) / 100;
+	    			s =  ( (root.docs.length + 1) - d.target.rank ) / root.docs.length;
 	    			colorStroke = d3.hsl(h,s,l).toString();
 	    			return colorStroke; 
 	    		}
@@ -584,7 +585,7 @@ ns.sev.drawD3TreeRadial = function(clusterTree) {
 	    		var h = 120,s,l = .80;
 	    		var colorStroke;
 	    		if (d.rank) {
-	    			s =  ( (root.docs.length + 1) - d.rank ) / 100;
+	    			s =  ( (root.docs.length + 1) - d.rank ) / root.docs.length;
 	    			colorStroke = d3.hsl(h,s,l).toString();
 	    			return colorStroke; 
 	    		}
@@ -766,7 +767,7 @@ ns.sev.drawD3ForceGraph = function(linksNodesForceJSON) {
 	    .style('fill', function(d) { 
     		var h = 120,s,l = .80;
     		if (d.rank) {
-    			s =  ( (root.docs.length + 1) - d.rank ) / 100;
+    			s =  ( (root.docs.length + 1) - d.rank ) / root.docs.length;
     			return d3.hsl(h,s,l).toString();
     		} else {
     			return "white"
@@ -911,7 +912,7 @@ ns.sev.drawD3ForceSearchGraph = function(clusterTree) {
 	    .style('fill', function(d) {
     		if (d.rank) {
     			var h = 120,s,l = .80;
-    			s =  ( (root.docs.length + 1) - d.rank ) / 100;
+    			s =  ( (root.docs.length + 1) - d.rank ) / root.docs.length;
     			
     			return d3.hsl(h,s,l).toString();
     		} else if (d.children) {
@@ -1023,28 +1024,114 @@ ns.sev.drawD3ForceSearchGraph = function(clusterTree) {
 	}
 }
 
+//--pack layout
+//---set input Object for pack layouts
+//---arguements:
+//----resultSolr (Object) (input data for appropriate input data for transformation)
+//---return: clusterNodes (Object) (input data for tree layout)
+ns.sev.getClusterNodesJSON = function(resultSolr) {
+	var clusterNodes = {"name":"", "nodes":[], "clusters":[]};
+	var clusterIndex = -1;
+	
+	//set clusterNodes
+	clusterNodes.name = resultSolr.response.docs[0].query;
+	resultSolr.clusters.forEach(function(clustersItem) {
+		clusterIndex++;
+		var cluster = {"name":"", "docs":[]};
+		cluster.name = clustersItem.labels[0];
+		cluster.docs = clustersItem.docs;
+		clusterNodes.clusters.push(cluster);
+		clustersItem.docs.forEach(function(docsItem) {
+			//set clusterDoc
+			var clusterDoc = {
+					"rank":"", 
+					"title":"", 
+					"description":"", 
+					"displayUrl":"", 
+					"url":"", 
+					"query":"", 
+					"depth":"",
+					"clusterName":"",
+					"clusterDocs":[],
+					"cluster":"",
+					"radius":""};
+			clusterDoc.rank = resultSolr.response.docs[docsItem-1].rank;
+			clusterDoc.title = resultSolr.response.docs[docsItem-1].title;
+			clusterDoc.description = resultSolr.response.docs[docsItem-1].description;
+			clusterDoc.displayUrl = resultSolr.response.docs[docsItem-1].displayUrl;
+			clusterDoc.url = resultSolr.response.docs[docsItem-1].url;
+			clusterDoc.query = resultSolr.response.docs[docsItem-1].query;
+			clusterDoc.depth = 2;
+			clusterDoc.clusterName = clustersItem.labels[0];
+			clusterDoc.clusterDocs = clustersItem.docs;
+			clusterDoc.cluster = clusterIndex;
+			clusterNodes.nodes.push(clusterDoc);
+			//clusterDoc.radius = 40 - Math.floor((clusterDoc.rank / resultSolr.response.docs.length) * 10);
+			//r = Math.sqrt((i + 1) / m * -Math.log(Math.random())) * maxRadius
+			var rank = clusterDoc.rank, length = resultSolr.response.docs.length, maxRadius = 20;
+			clusterDoc.radius = Math.sqrt( 0.5 * (rank/length + 1) * -Math.log(rank/(length + 20)) ) * maxRadius;
+		});	
+	});
+	
+	return clusterNodes;
+}
+
 //---force cluster nodes
 //---arguements:
 //----clusterTree (Object) (input data for define nodes and links)
-ns.sev.drawD3ForceClusterNodes = function(clusterTree) {
+ns.sev.drawD3ForceClusterNodes = function(clusterNodes) {
 	var width = parseInt(d3.select("div.cluster").style('width'), 10);
 	var areaRatio = .6;
 	var height = width * areaRatio;
-	var radius = 12;
-	var root = clusterTree;
+	
+	var padding = 2; //separation between same-color nodes
+	var clusterPadding = 20; //separation between different-color nodes
+	var maxRadius = 20;
+	
+	var root = clusterNodes;
 
-	var fill = d3.scale.category10();
+	//veriously colored
+	var color = d3.scale.category20()
+		.domain(d3.range(20));
 
-	var nodes = d3.range(100).map(function(i) {
-		return {index: i};
+	var nodes = root.nodes;
+	
+	//the largest node for each cluster
+	var clusters = []; 
+	root.nodes.forEach(function(docsItem) {
+		if (docsItem.rank == docsItem.clusterDocs[0]) clusters.push(docsItem);
 	});
-
-	//layout
-	var force = d3.layout.force()
-		.nodes(nodes)
+	
+	//layout to initialize the node positions
+	d3.layout.pack()
+		.sort(null)
 		.size([width, height])
-		.on("tick", tick)
-		.start();
+		.children(function(d) { return d.values; })
+		.value(function(d) { return d.radius * d.radius; })
+		.nodes({values: d3.nest()
+			.key(function(d) { return d.cluster; })
+			.entries(nodes)});
+
+	//layout (main layout)
+	var force = d3.layout.force()
+		.size([width, height])
+		.on("tick", tick);
+	
+	//-set layout parameter 
+	force
+		//.linkStrength(1) //0..1 (1)
+		//.friction(0.5) //0..1 (0.9) velocity decay
+		//.linkDistance(120) //0..x (20)
+		.charge(0) // node repulsion -x..0..+x node attraction (-30)
+		.gravity(0.02) // center repulsion 0..1 center attraction (0.1)  
+		//.theta(0.8) //0..1 (0.8)
+		//.alpha(0.1) //-1..0..1 (0.1) cooling parameter
+		;
+	
+	//-start the force layout with the current nodes and links
+	force
+		.nodes(nodes)
+	    .start();
 
 	//svg container
 	var svg = d3.select("div#draw-force-cluster-nodes").append("svg")
@@ -1055,47 +1142,121 @@ ns.sev.drawD3ForceClusterNodes = function(clusterTree) {
 		.transition()
 		.duration(1000)
 		.style("opacity", 1);
-	
+
 	//enter node
 	var node = svg.selectAll(".node")
 		.data(nodes)
 	.enter().append("g")
-		.attr("class", function(d) { return d.url ? "node leaf" : "node innerNode"; })
-	    .call(force.drag);
-	
-	//-set circle
+		.attr("class", "node leaf")
+		.style("cursor", "pointer")
+		.on("mouseover.effect", ns.sev.mouseoverSetStyle)
+	    .on("mouseout.effect", ns.sev.mouseoutSetStyle)
+	    .on("click", ns.sev.onClickOpenURL)
+		.call(force.drag);
+
+	//-circle
 	var circle = node.append("circle")
 		.attr("class", "circle")
-		//.attr("cx", function(d) { return d.x; })
-		//.attr("cy", function(d) { return d.y; })
-		.attr("r", 8)
-		.style("fill", function(d, i) { return fill(i & 3); })
-		.style("stroke", function(d, i) { return d3.rgb(fill(i & 3)).darker(2); })
-		.style("stroke-width", "1.5px")
-		.call(force.drag);
+		.attr("r", function(d) {return d.radius;})
+		.style("fill", function(d) { 
+			var h,s = 1,l = .60;
+			var iHue = 360 / root.clusters.length;
+			//set h
+			h =  iHue * d.cluster;
+			//set s (odd or even)
+			d.cluster & 1 ? s = .5 : s = 1;
+			
+			return d3.hsl(h,s,l).toString();
+		})
+		.style('fill-opacity', 0.5)
+		.on("mouseover.tooltip", ns.sev.mouseoverShowTooltip)
+		.on("mouseout.tooltip", ns.sev.mouseoutHideTooltip);
 	
-	//--text
+	/*
+	circle.transition()
+	    .duration(750)
+	    .delay(function(d, i) { return i * 5; })
+	    .attrTween("r", function(d) {
+	      var i = d3.interpolate(0, d.radius);
+	      return function(t) { return d.radius = i(t); };
+	    });
+	*/
+
+	//-text
 	node.append("text")
-	    .attr("x", 0)
+		.attr("x", 0)
 	    .attr("dy", ".35em")
+	    .style('fill-opacity', 0.25)
 	    .style("text-anchor", "middle")
-	    .text(function(d) { return "text" })
+	    .text(function(d) { return d.rank; })
+	    .on("mouseover.tooltip", ns.sev.mouseoverShowTooltip)
+		.on("mouseout.tooltip", ns.sev.mouseoutHideTooltip);
 
 	//inner functions (respective callbacks)
+	//-compute tick
 	function tick(e) {
-
-		// Push different nodes in different directions for clustering.
-		var k = 6 * e.alpha;
-		nodes.forEach(function(o, i) {
-			o.y += i & 1 ? k : -k;
-			o.x += i & 2 ? k : -k;
-		});
-
-		//circle.attr("cx", function(d) { return d.x; })
-			//.attr("cy", function(d) { return d.y; });
-		
 		node
-			.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+			.each(cluster(10 * e.alpha * e.alpha))
+			.each(collide(.5))	
+			.attr("transform", function(d) { return "translate(" + dxConstrain(d.x) + "," + 
+				dyConstrain(d.y) + ")"; });
+	}
+		
+	function dxConstrain(dx) {
+		var padding = 10;
+		return Math.max(maxRadius + padding, Math.min(width - (maxRadius + padding), dx));
+	}
+
+	function dyConstrain(dy) {
+		var padding = 10;
+		return Math.max(maxRadius + padding, Math.min(height - (maxRadius + padding), dy));
+	}
+
+	//-move d to be adjacent to the cluster node.
+	function cluster(alpha) {
+		return function(d) {
+			var cluster = clusters[d.cluster];
+			if (cluster === d) return;
+			var x = d.x - cluster.x,
+			y = d.y - cluster.y,
+			l = Math.sqrt(x * x + y * y),
+			r = d.radius + cluster.radius;
+			if (l != r) {
+				l = (l - r) / l * alpha;
+				d.x -= x *= l;
+				d.y -= y *= l;
+				cluster.x += x;
+				cluster.y += y;
+			}
+		};
+	}
+
+	//-resolves collisions between d and all other circles.
+	function collide(alpha) {
+		var quadtree = d3.geom.quadtree(nodes);
+		return function(d) {
+			var r = d.radius + maxRadius + Math.max(padding, clusterPadding),
+			nx1 = d.x - r,
+			nx2 = d.x + r,
+			ny1 = d.y - r,
+			ny2 = d.y + r;
+			quadtree.visit(function(quad, x1, y1, x2, y2) {
+				if (quad.point && (quad.point !== d)) {
+					var x = d.x - quad.point.x,
+					y = d.y - quad.point.y,
+					l = Math.sqrt(x * x + y * y),
+					r = d.radius + quad.point.radius + (d.cluster === quad.point.cluster ? padding : clusterPadding);
+					if (l < r) {
+						l = (l - r) / l * alpha;
+						d.x -= x *= l;
+						d.y -= y *= l;
+						quad.point.x += x;
+						quad.point.y += y;
+					}
+				}
+				return x1 > nx2 || x2 < nx1 || y1 > ny2 || y2 < ny1;
+			});
+		};
 	}
 }
 
@@ -1104,12 +1265,14 @@ ns.sev.drawD3ForceClusterNodes = function(clusterTree) {
 //---arguements:
 //----d (Object) (d3 datum)
 ns.sev.mouseoverSetStyle = function(d) {
+	//circle
 	if (!d.rank) return; // only leaf nodes
 	d3.select(this).select("circle")
   		//.transition().duration(750)
   		.style('fill-opacity', 1);
   		//.attr("r", radius*3);
   
+	//text
 	d3.select(this).select("text")
   		.style('fill-opacity', 1);
 }
@@ -1118,10 +1281,14 @@ ns.sev.mouseoverSetStyle = function(d) {
 //---arguements:
 //----d (Object) (d3 datum)
 ns.sev.mouseoutSetStyle = function(d) {
+	//circle
 	d3.select(this).select("circle")
 		//.transition().duration(750)
-  	 	.style('fill-opacity', 1);
-  		//.attr("r", function(d) { return (d.rank ? radius : radius * 1.5); });
+  	 	.style('fill-opacity', 0.5);
+	
+	//text
+	d3.select(this).select("text")
+		.style('fill-opacity', 0.25);
 }
 
 //---on click open URL 
@@ -1131,11 +1298,11 @@ ns.sev.onClickOpenURL = function(d) {
 	//-verify leaf node
 	if (!d.url) {return}
 	//-function statement
-    window.open(d.url);
-	  d3.select(this).select("circle")
-	  .style("stroke", "steelblue")
-	  .style("stroke-width", "2.5px")
-	  .style("stroke-opacity", 1);
+	window.open(d.url);
+	d3.select(this).select("circle")
+		.style("stroke", "steelblue")
+		.style("stroke-width", "2.5px")
+		.style("stroke-opacity", 1);
 }
 
 //---on click ahref focus
@@ -1247,8 +1414,8 @@ ns.sev.responsiveD3 = function() {
 			ns.sev.drawD3ForceSearchGraph(ns.sev.resultClusterTreeJSON);
 		} else if ( $("div#force-cluster-nodes").css("display") == "block" ) {
 		//--update force cluster nodes	
-			ns.sev.resultClusterTreeJSON = ns.sev.getClusterTreeJSON(ns.sev.resultSolrJSON);
-			ns.sev.drawD3ForceClusterNodes(ns.sev.resultClusterTreeJSON);
+			ns.sev.resultClusterNodesJSON = ns.sev.getClusterNodesJSON(ns.sev.resultSolrJSON);
+			ns.sev.drawD3ForceClusterNodes(ns.sev.resultClusterNodesJSON);
 		}
 			
 		//-refresh the SERPs table
