@@ -43,8 +43,9 @@
 <script	src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
 
 <!-- js.d3 -->
+<script type="text/javascript" src="resources/js/d3/d3.min.js"></script>
+<!--
 <script	src="http://d3js.org/d3.v3.min.js"></script>
-<!-- 
 <script type="text/javascript" src="resources/js/d3/d3.min.js"></script>
 <script type="text/javascript" src="resources/js/d3/d3plus.min.js"></script>
  -->
