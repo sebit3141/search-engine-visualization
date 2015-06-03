@@ -9,16 +9,18 @@ ns.sev.currentPage = 1;
 ns.sev.serpsPerPage = 10;
 ns.sev.clusters = [];
 //---Solr
-ns.sev.solrURL = "http://localhost:5000/sevCore/clustering?wt=json";
+//ns.sev.solrURL = "http://localhost:5000/sevCore/clustering?wt=json";
+ns.sev.solrURL = "https://solr-clustering.herokuapp.com/sevCore/clustering?wt=json";
+
 ns.sev.resultSolrJSON = {};
 ns.sev.resultClusterTreeJSON = {};
 ns.sev.resultLinksNodesForceJSON = {};
 ns.sev.resultClusterNodesJSON = {};
 
 /*
- * -JS function auto calls
+ * -Initial function: load functionalities of Script.js
  */
-$(function() {
+ns.sev.loadScript = function() {
 	//-AJAX: Solr Clustering
 	ns.sev.ajaxSolrClustering();
 	
@@ -27,7 +29,7 @@ $(function() {
 	
 	//-event handler
 	$(".loadButton").click(ns.sev.loadNextPageClient);
-})
+}
 
 /*
  * -AJAX: Solr Clustering
@@ -222,19 +224,29 @@ ns.sev.finishRefresh = function() {
 //---return: clusterRoot (Object) (input data for tree layout)
 ns.sev.getClusterTreeJSON = function(resultSolr) {
 	//set clusterRoot
-	var clusterRoot = {"name":"", "children":[], "docs":[], "depth":""};
+	var clusterRoot = {"name":"", "children":[], "docs":[], "depth":"", "tooltip":""};
 	clusterRoot.name = resultSolr.response.docs[0].query;
 	clusterRoot.docs = resultSolr.response.docs;
 	clusterRoot.depth = 0;
+	clusterRoot.tooltip = "query";
 	resultSolr.clusters.forEach(function(clustersItem) {
 		//set clusterLabel
-		var clusterLabel = {"name":"", "children":[], "docs":[],  "depth":""};
+		var clusterLabel = {"name":"", "children":[], "docs":[],  "depth":"", "tooltip":""};
 		clusterLabel.name = clustersItem.labels[0];
 		clusterLabel.docs = clustersItem.docs;
 		clusterLabel.depth = 1;
+		clusterLabel.tooltip = "cluster";
 		clustersItem.docs.forEach(function(docsItem) {
 			//set clusterDoc
-			var clusterDoc = {"rank":"", "title":"", "description":"", "displayUrl":"", "url":"", "query":"", "depth":""};
+			var clusterDoc = {
+					"rank":"", 
+					"title":"", 
+					"description":"", 
+					"displayUrl":"", 
+					"url":"", 
+					"query":"", 
+					"depth":"",
+					"tooltip":""};
 			clusterDoc.rank = resultSolr.response.docs[docsItem-1].rank;
 			clusterDoc.title = resultSolr.response.docs[docsItem-1].title;
 			clusterDoc.description = resultSolr.response.docs[docsItem-1].description;
@@ -242,6 +254,7 @@ ns.sev.getClusterTreeJSON = function(resultSolr) {
 			clusterDoc.url = resultSolr.response.docs[docsItem-1].url;
 			clusterDoc.query = resultSolr.response.docs[docsItem-1].query;
 			clusterDoc.depth = 2;
+			clusterDoc.tooltip = "serp";
 			
 			clusterLabel.children.push(clusterDoc);
 		});
@@ -667,10 +680,12 @@ ns.sev.getLinksNodesForceJSON = function(resultSolr) {
 				nodes[source].url = resultSolr.response.docs[source-1].url;
 				nodes[source].query = resultSolr.response.docs[source-1].query;
 				nodes[source].node = "leaf";
+				nodes[source].tooltip = "serp";
 			} else {
 			//--innerNode
-				nodes[source].node = "innerNode";
 				nodes[source].docs = clusterDocs[source].docs;
+				nodes[source].node = "innerNode";
+				nodes[source].tooltip = "cluster";
 			}
 		} else {
 			//-set name for links
@@ -693,10 +708,12 @@ ns.sev.getLinksNodesForceJSON = function(resultSolr) {
 				nodes[target].url = resultSolr.response.docs[target-1].url;
 				nodes[target].query = resultSolr.response.docs[target-1].query;
 				nodes[target].node = "leaf";
+				nodes[target].tooltip = "serp";
 			} else {
 			//--innerNode
-				nodes[target].node = "innerNode";
 				nodes[target].docs = clusterDocs[target].docs;
+				nodes[target].node = "innerNode";
+				nodes[target].tooltip = "cluster";
 			}
 		} else {
 			//-set name for links
@@ -1044,6 +1061,7 @@ ns.sev.getClusterNodesJSON = function(resultSolr) {
 		clustersItem.docs.forEach(function(docsItem) {
 			//set clusterDoc
 			var clusterDoc = {
+					"clusterNode": true,
 					"rank":"", 
 					"title":"", 
 					"description":"", 
@@ -1054,7 +1072,9 @@ ns.sev.getClusterNodesJSON = function(resultSolr) {
 					"clusterName":"",
 					"clusterDocs":[],
 					"cluster":"",
-					"radius":""};
+					"radius":"",
+					"color":"",
+					"tooltip":"cluster_serp"};
 			clusterDoc.rank = resultSolr.response.docs[docsItem-1].rank;
 			clusterDoc.title = resultSolr.response.docs[docsItem-1].title;
 			clusterDoc.description = resultSolr.response.docs[docsItem-1].description;
@@ -1165,8 +1185,10 @@ ns.sev.drawD3ForceClusterNodes = function(clusterNodes) {
 			h =  iHue * d.cluster;
 			//set s (odd or even)
 			d.cluster & 1 ? s = .5 : s = 1;
+			//set color
+			d.color = d3.hsl(h,s,l).toString(); 
 			
-			return d3.hsl(h,s,l).toString();
+			return d.color;
 		})
 		.style('fill-opacity', 0.5)
 		.on("mouseover.tooltip", ns.sev.mouseoverShowTooltip)
@@ -1296,7 +1318,9 @@ ns.sev.mouseoutSetStyle = function(d) {
 //----d (Object) (d3 datum)
 ns.sev.onClickOpenURL = function(d) {
 	//-verify leaf node
-	if (!d.url) {return}
+	if (!d.url) return;
+	//-on drag: click suppressed
+	if (d3.event.defaultPrevented) return; 
 	//-function statement
 	window.open(d.url);
 	d3.select(this).select("circle")
@@ -1326,15 +1350,27 @@ ns.sev.mouseoverShowTooltip = function(d, i) {
 	var templ = '<div class="tooltip" role="tooltip"><div class="tooltip-inner"></div></div>';
 	
 	//-verify nodes to set html 
-	if ( d.depth == 0 ) {
+	if ( d.tooltip == "query" ) {
 	//--root
 		html += "<p>Search keyword: <span class='text-success'><strong>" + d.name + "</strong></span></p>";
-	} else if ( d.depth == 1 || d.node == "innerNode" ) {
+	} else if ( d.tooltip == "cluster" ) {
 	//--inner node
 		html += "<h5>Category: <span class='text-success'><strong>" + d.name + "</strong></span></h5>";
 		html += "<p><span class='text-success'><strong>" + d.docs.length + "</strong></span> result pages</p>";
-	} else if ( d.depth == 2 || d.node == "leaf" ) {
+	} else if ( d.tooltip == "serp"  ) {
 	//--leaf
+		html += "<h5>";
+			html += "<span>" + d.rank + " | </span>";
+			html += "<a href=''> " + d.title + " </a>";
+		html += "</h5>";
+		html += "<p class='text-success'>" + d.displayUrl + "</p>";
+		html += "<p>" + d.description + "</p>";
+	} else if ( d.tooltip == "cluster_serp"  ) {
+	//--cluster node
+		//cluster
+		html += "<h5>Category: <span class='text-success'><strong>" + d.clusterName + "</strong></span></h5>";
+		html += "<p><span class='text-success'><strong>" + d.clusterDocs.length + "</strong></span> result pages</p>";
+		//doc
 		html += "<h5>";
 			html += "<span>" + d.rank + " | </span>";
 			html += "<a href=''> " + d.title + " </a>";

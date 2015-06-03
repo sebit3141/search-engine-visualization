@@ -6,6 +6,13 @@
 
 <%@ page session="false"%>
 
+<!-- js.Custom: load functionalities of Script.js -->
+<script>
+	var ns = ns || {};
+	ns.sev = ns.sev || {};
+	ns.sev.loadScript();
+</script>
+
 <!-- Body: search results  items -->
 <div id="main" class="container">
 	<div class="cluster">
