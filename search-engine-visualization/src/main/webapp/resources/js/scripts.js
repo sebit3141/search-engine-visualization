@@ -9,8 +9,8 @@ ns.sev.currentPage = 1;
 ns.sev.serpsPerPage = 10;
 ns.sev.clusters = [];
 //---Solr
-//ns.sev.solrURL = "http://localhost:5000/sevCore/clustering?wt=json";
-ns.sev.solrURL = "https://solr-clustering.herokuapp.com/sevCore/clustering?wt=json";
+ns.sev.solrURL = "http://localhost:5000/sevCore/clustering?wt=json";
+//ns.sev.solrURL = "https://solr-clustering.herokuapp.com/sevCore/clustering?wt=json";
 
 ns.sev.resultSolrJSON = {};
 ns.sev.resultClusterTreeJSON = {};
@@ -868,7 +868,7 @@ ns.sev.drawD3ForceSearchGraph = function(clusterTree) {
 		//.linkStrength(1) //0..1 (1)
 		.friction(0.5) //0..1 (0.9) velocity decay
 		//.linkDistance(120) //0..x (20)
-		.charge(-3000) // node repulsion -x..0..+x node attraction (-30)
+		.charge(-8000) // node repulsion -x..0..+x node attraction (-30)
 		.gravity(0.5) // center repulsion 0..1 center attraction (0.1)  
 		//.theta(0.8) //0..1 (0.8)
 		//.alpha(0.1) //-1..0..1 (0.1) cooling parameter
@@ -1187,6 +1187,8 @@ ns.sev.drawD3ForceClusterNodes = function(clusterNodes) {
 			d.cluster & 1 ? s = .5 : s = 1;
 			//set color
 			d.color = d3.hsl(h,s,l).toString(); 
+			//set text color
+			( h > 30 && h < 200) ? d.colorText = "black" : d.colorText  = "white"; 
 			
 			return d.color;
 		})
@@ -1368,8 +1370,10 @@ ns.sev.mouseoverShowTooltip = function(d, i) {
 	} else if ( d.tooltip == "cluster_serp"  ) {
 	//--cluster node
 		//cluster
-		html += "<h5>Category: <span class='text-success'><strong>" + d.clusterName + "</strong></span></h5>";
-		html += "<p><span class='text-success'><strong>" + d.clusterDocs.length + "</strong></span> result pages</p>";
+		var style = "style='background-color:" + d.color + "; text-align: center; color: " + d.colorText + ";'";
+		html +="<h5 style='text-align: center; margin-bottom: 5px;'>Category: ";
+			html  += "<span "+ style + ">&nbsp<strong>" + d.clusterName + "</strong>&nbsp</span>"; 
+		html += "</h5>";
 		//doc
 		html += "<h5>";
 			html += "<span>" + d.rank + " | </span>";

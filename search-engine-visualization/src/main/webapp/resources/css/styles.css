@@ -273,7 +273,7 @@ div.tooltip-inner {
 .tooltip-inner {
     border-radius: 0px;
     color: #777;
-    max-width: 300px;
+    max-width: 600px;
     padding: 3px 8px;
     text-align: left;
     text-decoration: none;
