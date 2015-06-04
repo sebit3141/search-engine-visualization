@@ -9,8 +9,8 @@ ns.sev.currentPage = 1;
 ns.sev.serpsPerPage = 10;
 ns.sev.clusters = [];
 //---Solr
-ns.sev.solrURL = "http://localhost:5000/sevCore/clustering?wt=json";
-//ns.sev.solrURL = "https://solr-clustering.herokuapp.com/sevCore/clustering?wt=json";
+//ns.sev.solrURL = "http://localhost:5000/sevCore/clustering?wt=json";
+ns.sev.solrURL = "https://solr-clustering.herokuapp.com/sevCore/clustering?wt=json";
 
 ns.sev.resultSolrJSON = {};
 ns.sev.resultClusterTreeJSON = {};
