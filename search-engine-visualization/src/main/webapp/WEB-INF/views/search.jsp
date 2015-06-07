@@ -6,13 +6,6 @@
 
 <%@ page session="false"%>
 
-<!-- js.Custom: load functionalities of Script.js -->
-<script>
-	var ns = ns || {};
-	ns.sev = ns.sev || {};
-	ns.sev.loadScript();
-</script>
-
 <!-- Body: search results  items -->
 <div id="main" class="container">
 	<div class="cluster">
@@ -30,6 +23,8 @@
 				data-toggle="tab">Search Graph</a></li>
 			<li class="" id="tab-force-cluster-nodes"><a aria-expanded="true" href="#force-cluster-nodes"
 				data-toggle="tab">Cluster Nodes</a></li>
+			<li class="" id="tab-word-cloud"><a aria-expanded="true" href="#word-cloud"
+				data-toggle="tab">Word Cloud</a></li>
 		</ul>
 		<div id="clusterTabContent" class="tab-content">
 			<div class="tab-pane fade active in" id="tree">
@@ -51,6 +46,10 @@
 			<div class="tab-pane fade" id="force-cluster-nodes">
 				<br>
 				<div id="draw-force-cluster-nodes"></div>
+			</div>
+			<div class="tab-pane fade" id="word-cloud">
+				<br>
+				<div id="draw-word-cloud"></div>
 			</div>
 		</div>
 	</div>

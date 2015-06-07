@@ -29,8 +29,8 @@ public class SolrService {
 	private String urlHerokuSolrClustering = "https://solr-clustering.herokuapp.com/sevCore";
 	
 	//URL (active)
-	//private String urlString = urlLocalSolrClustering;
-	private String urlString = urlHerokuSolrClustering;
+	private String urlString = urlLocalSolrClustering;
+	//private String urlString = urlHerokuSolrClustering;
 	
 	//Solr Client
 	SolrClient solrClient;

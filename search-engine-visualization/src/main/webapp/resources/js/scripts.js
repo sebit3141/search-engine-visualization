@@ -9,8 +9,8 @@ ns.sev.currentPage = 1;
 ns.sev.serpsPerPage = 10;
 ns.sev.clusters = [];
 //---Solr
-//ns.sev.solrURL = "http://localhost:5000/sevCore/clustering?wt=json";
-ns.sev.solrURL = "https://solr-clustering.herokuapp.com/sevCore/clustering?wt=json";
+ns.sev.solrURL = "http://localhost:5000/sevCore/clustering?wt=json";
+//ns.sev.solrURL = "https://solr-clustering.herokuapp.com/sevCore/clustering?wt=json";
 
 ns.sev.resultSolrJSON = {};
 ns.sev.resultClusterTreeJSON = {};
@@ -28,27 +28,7 @@ ns.sev.loadScript = function() {
 	ns.sev.setQueryStringBold();
 	
 	//-event handler
-	$(".loadButton").click(ns.sev.loadNextPageClient);
-}
-
-/*
- * -AJAX: Solr Clustering
- */
-
-ns.sev.ajaxSolrClustering = function() {
-	$.ajax({
-		url: ns.sev.solrURL,
-		dataType: 'jsonp',
-		jsonp: 'json.wrf',
-		success: function(response){
-			ns.sev.resultSolrJSON = response;
-			ns.sev.afterAJAX();
-		},
-		error: function (xhr, err) {
-            console.log(xhr);
-            console.log(err);
-        }
-	});
+	$("#loadButton").click(ns.sev.loadNextPageClient);
 }
 
 /*
@@ -108,8 +88,37 @@ ns.sev.afterAJAX = function() {
 		//-refresh the SERPs table
 		ns.sev.refreshSerps();
 	});
+	//--word cloud
+	$("li#tab-word-cloud").click( function(){
+		//remove special svg
+		$("div#word-cloud svg").remove();
+		//-draw layout
+		ns.sev.drawD3WordCloud();
+		//-refresh the SERPs table
+		ns.sev.refreshSerps();
+	});
 	//--responsive
 	ns.sev.responsiveD3();
+}
+
+/*
+ * -AJAX: Solr Clustering
+ */
+
+ns.sev.ajaxSolrClustering = function() {
+	$.ajax({
+		url: ns.sev.solrURL,
+		dataType: 'jsonp',
+		jsonp: 'json.wrf',
+		success: function(response){
+			ns.sev.resultSolrJSON = response;
+			ns.sev.afterAJAX();
+		},
+		error: function (xhr, err) {
+            console.log(xhr);
+            console.log(err);
+        }
+	});
 }
 
 /*
@@ -201,15 +210,15 @@ ns.sev.loadNextPageClient = function(e) {
 	ns.sev.setQueryStringBold();
 }
 
-//hide the .loadButton and add a Spinner
+//hide the #loadButton and add a Spinner
 ns.sev.startRefresh = function() {
-	$(".loadButton").css("display","none");
-	$(".loadButton").after("<i class='fa fa-refresh fa-spin'  style='color:#337ab7'></i>")
+	$("#loadButton").css("display","none");
+	$("#loadButton").after("<i class='fa fa-refresh fa-spin'  style='color:#337ab7'></i>")
 }
 
-//show the .loadButton and remove the Spinner
+//show the #loadButton and remove the Spinner
 ns.sev.finishRefresh = function() {
-	$(".loadButton").css("display","inline");
+	$("#loadButton").css("display","inline");
 	$(".fa-spin").remove()
 }
 
@@ -269,6 +278,7 @@ ns.sev.getClusterTreeJSON = function(resultSolr) {
 //---arguements:
 //----clusterTree (Object) (input data for define nodes and links)
 ns.sev.drawD3Tree = function(clusterTree) {
+	//size
 	var margin = {top: 20, right: 120, bottom: 20, left: 120};
 	var width = parseInt(d3.select("div.cluster").style('width'), 10);
 	var areaRatio = .5;
@@ -536,12 +546,13 @@ ns.sev.drawD3Tree = function(clusterTree) {
 //---arguements:
 //----clusterTree (Object) (input data for define nodes and links)
 ns.sev.drawD3TreeRadial = function(clusterTree) {
-	var root = clusterTree;
-	
+	//size
 	var width = parseInt(d3.select("div.cluster").style('width'), 10);
 	var areaRatio = .6;
 	var height = width * areaRatio;
+
 	var radius = height * .3;
+	var root = clusterTree;
 
 	//-layout
 	var tree = d3.layout.tree()
@@ -729,11 +740,12 @@ ns.sev.getLinksNodesForceJSON = function(resultSolr) {
 //---arguements:
 //----linksNodesForceJSON (Object) (input data for define nodes and links)
 ns.sev.drawD3ForceGraph = function(linksNodesForceJSON) {
+	//size
 	var width = parseInt(d3.select("div.cluster").style('width'), 10);
 	var areaRatio = .6;
 	var height = width * areaRatio;
-	var radius = 12;
 	
+	var radius = 12;	
 	var root = linksNodesForceJSON;
 
 	//-set layout
@@ -836,9 +848,11 @@ ns.sev.drawD3ForceGraph = function(linksNodesForceJSON) {
 //---arguements:
 //----clusterTree (Object) (input data for define nodes and links)
 ns.sev.drawD3ForceSearchGraph = function(clusterTree) {
+	//size
 	var width = parseInt(d3.select("div.cluster").style('width'), 10);
 	var areaRatio = .6;
 	var height = width * areaRatio;
+
 	var radius = 12;
 	var root = clusterTree;
 		
@@ -1041,7 +1055,6 @@ ns.sev.drawD3ForceSearchGraph = function(clusterTree) {
 	}
 }
 
-//--pack layout
 //---set input Object for pack layouts
 //---arguements:
 //----resultSolr (Object) (input data for appropriate input data for transformation)
@@ -1100,6 +1113,7 @@ ns.sev.getClusterNodesJSON = function(resultSolr) {
 //---arguements:
 //----clusterTree (Object) (input data for define nodes and links)
 ns.sev.drawD3ForceClusterNodes = function(clusterNodes) {
+	//size
 	var width = parseInt(d3.select("div.cluster").style('width'), 10);
 	var areaRatio = .6;
 	var height = width * areaRatio;
@@ -1281,6 +1295,49 @@ ns.sev.drawD3ForceClusterNodes = function(clusterNodes) {
 				return x1 > nx2 || x2 < nx1 || y1 > ny2 || y2 < ny1;
 			});
 		};
+	}
+}
+
+//--faceting
+//---word cloud
+//---arguements:
+//----clusterTree (Object) (input data for define nodes and links)
+ns.sev.drawD3WordCloud = function() {
+	//size
+	var width = parseInt(d3.select("div.cluster").style('width'), 10);
+	var areaRatio = .6;
+	var height = width * areaRatio;
+	
+	var fill = d3.scale.category20();
+	d3.layout.cloud().size([width, height])
+	.words([
+	        "Hello", "world", "normally", "you", "want", "more", "words",
+	        "than", "this"].map(function(d) {
+	        	return {text: d, size: 10 + Math.random() * 90};
+	        }))
+	        .padding(5)
+	        .rotate(function() { return 0; })
+	        .font("Impact")
+	        .fontSize(function(d) { return d.size; })
+	        .on("end", draw)
+	        .start();
+	function draw(words) {
+		d3.select("div#draw-word-cloud").append("svg")
+		.attr("width", width)
+		.attr("height", height)
+		.append("g")
+		.attr("transform", "translate( "+ width/2 + "," + height/2 + ")")
+		.selectAll("text")
+		.data(words)
+		.enter().append("text")
+		.style("font-size", function(d) { return d.size + "px"; })
+		.style("font-family", "Impact")
+		.style("fill", function(d, i) { return fill(i); })
+		.attr("text-anchor", "middle")
+		.attr("transform", function(d) {
+			return "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")";
+		})
+		.text(function(d) { return d.text; });
 	}
 }
 
@@ -1550,7 +1607,7 @@ ns.sev.refreshSerps = function() {
 	html += '<tr class="loadNextRow">'
 		html += '<td colspan="2" class="loadNextColumn">'
 			html += '<div style="text-align: center">'
-				html += '<strong> <a class="loadButton" href="">load next 10 items</a></strong>'
+				html += '<strong> <a id="loadButton">load next 10 items</a></strong>'
 			html += '</div>'
 		html += '</td>'
 	html += '</tr>'
@@ -1563,5 +1620,5 @@ ns.sev.refreshSerps = function() {
 	ns.sev.setQueryStringBold();	
 
 	//-event handler (reassign the Button to the listenr)
-	$(".loadButton").click(ns.sev.loadNextPageClient);
+	$("#loadButton").click(ns.sev.loadNextPageClient);
 }

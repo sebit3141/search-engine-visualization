@@ -32,10 +32,7 @@
 		<tr class="loadNextRow">
 			<td class="loadNextColumn" colspan="2">
 				<div style="text-align: center">
-					<strong> <a
-						href="<spring:url value='' />${noscriptNextPageUrl}"
-						class="loadButton">load next 10 items</a>
-					</strong>
+					<strong><a id="loadButton">load next 10 items</a></strong>
 				</div>
 			</td>
 		</tr>

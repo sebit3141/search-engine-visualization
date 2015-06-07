@@ -201,6 +201,11 @@ p {
 	color: #777;
 }
 
+a#loadButton {
+	display: inline; 
+	cursor: pointer;
+}
+
 /* highlight-5.js */
 /*
 .highlight {

@@ -44,6 +44,8 @@
 
 <!-- js.d3 -->
 <script type="text/javascript" src="resources/js/d3/d3.min.js"></script>
+<script type="text/javascript" src="resources/js/d3/d3.layout.cloud.js"></script>
+
 <!--
 <script	src="http://d3js.org/d3.v3.min.js"></script>
 <script type="text/javascript" src="resources/js/d3/d3.min.js"></script>

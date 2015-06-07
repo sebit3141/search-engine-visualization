@@ -25,3 +25,10 @@
 	ns.sev = ns.sev || {};
 	ns.sev.resultDTOListJSON = ${resultDTOListJSON};
 </script>
+
+<!-- js.Custom: load functionalities of Script.js -->
+<script>
+	var ns = ns || {};
+	ns.sev = ns.sev || {};
+	ns.sev.loadScript();
+</script>
