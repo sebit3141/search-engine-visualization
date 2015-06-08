@@ -4,18 +4,31 @@
 //--declare namespace
 var ns = ns || {};
 ns.sev = ns.sev || {};
+
 //--declare global scope
 ns.sev.currentPage = 1;
 ns.sev.serpsPerPage = 10;
 ns.sev.clusters = [];
-//---Solr
-ns.sev.solrURL = "http://localhost:5000/sevCore/clustering?wt=json";
-//ns.sev.solrURL = "https://solr-clustering.herokuapp.com/sevCore/clustering?wt=json";
 
+//---Solr
+ns.sev.solr = {};
+ns.sev.solr.qt = "/clustering";
+ns.sev.solr.wt = "wt=json";
+ns.sev.solr.facet = "facet=true&facet.field=text_facet"
+
+ns.sev.solr.urlLocal = "http://localhost:5000/sevCore";
+ns.sev.solr.urlHeroku = "https://solr-clustering.herokuapp.com/sevCore";
+ns.sev.solr.url = ns.sev.solr.urlLocal;
+
+ns.sev.solr.query = ns.sev.solr.url + ns.sev.solr.qt + "?" + ns.sev.solr.wt + "&" + ns.sev.solr.facet;
+
+//---Solr response and transformations
 ns.sev.resultSolrJSON = {};
+ns.sev.resultSolrSelectJSON = {};
 ns.sev.resultClusterTreeJSON = {};
 ns.sev.resultLinksNodesForceJSON = {};
 ns.sev.resultClusterNodesJSON = {};
+ns.sev.resultFacetingJSON = {};
 
 /*
  * -Initial function: load functionalities of Script.js
@@ -46,7 +59,7 @@ ns.sev.afterAJAX = function() {
 		ns.sev.resultClusterTreeJSON = ns.sev.getClusterTreeJSON(ns.sev.resultSolrJSON);
 		ns.sev.drawD3Tree(ns.sev.resultClusterTreeJSON);
 		//-refresh the SERPs table
-		ns.sev.refreshSerps();
+		ns.sev.refreshSerps(ns.sev.resultSolrJSON);
 	});
 	//--radial tree
 	$("li#tab-radial-tree").click( function(){
@@ -56,7 +69,7 @@ ns.sev.afterAJAX = function() {
 		ns.sev.resultClusterTreeJSON = ns.sev.getClusterTreeJSON(ns.sev.resultSolrJSON);
 		ns.sev.drawD3TreeRadial(ns.sev.resultClusterTreeJSON);
 		//-refresh the SERPs table
-		ns.sev.refreshSerps();
+		ns.sev.refreshSerps(ns.sev.resultSolrJSON);
 	});
 	//--force graph
 	$("li#tab-force-graph").click( function(){
@@ -66,7 +79,7 @@ ns.sev.afterAJAX = function() {
 		ns.sev.resultLinksNodesForceJSON = ns.sev.getLinksNodesForceJSON(ns.sev.resultSolrJSON); 		
 		ns.sev.drawD3ForceGraph(ns.sev.resultLinksNodesForceJSON);
 		//-refresh the SERPs table
-		ns.sev.refreshSerps();
+		ns.sev.refreshSerps(ns.sev.resultSolrJSON);
 	});
 	//--force search graph
 	$("li#tab-force-search-graph").click( function(){
@@ -76,7 +89,7 @@ ns.sev.afterAJAX = function() {
 		ns.sev.resultClusterTreeJSON = ns.sev.getClusterTreeJSON(ns.sev.resultSolrJSON);
 		ns.sev.drawD3ForceSearchGraph(ns.sev.resultClusterTreeJSON);
 		//-refresh the SERPs table
-		ns.sev.refreshSerps();
+		ns.sev.refreshSerps(ns.sev.resultSolrJSON);
 	});
 	//--force cluster nodes
 	$("li#tab-force-cluster-nodes").click( function(){
@@ -86,16 +99,17 @@ ns.sev.afterAJAX = function() {
 		ns.sev.resultClusterNodesJSON = ns.sev.getClusterNodesJSON(ns.sev.resultSolrJSON);
 		ns.sev.drawD3ForceClusterNodes(ns.sev.resultClusterNodesJSON);
 		//-refresh the SERPs table
-		ns.sev.refreshSerps();
+		ns.sev.refreshSerps(ns.sev.resultSolrJSON);
 	});
 	//--word cloud
 	$("li#tab-word-cloud").click( function(){
 		//remove special svg
 		$("div#word-cloud svg").remove();
 		//-draw layout
-		ns.sev.drawD3WordCloud();
+		ns.sev.resultFacetingJSON = ns.sev.getFacetingJSON(ns.sev.resultSolrJSON);
+		ns.sev.drawD3WordCloud(ns.sev.resultFacetingJSON);
 		//-refresh the SERPs table
-		ns.sev.refreshSerps();
+		ns.sev.refreshSerps(ns.sev.resultSolrJSON);
 	});
 	//--responsive
 	ns.sev.responsiveD3();
@@ -107,7 +121,7 @@ ns.sev.afterAJAX = function() {
 
 ns.sev.ajaxSolrClustering = function() {
 	$.ajax({
-		url: ns.sev.solrURL,
+		url: ns.sev.solr.query,
 		dataType: 'jsonp',
 		jsonp: 'json.wrf',
 		success: function(response){
@@ -1299,45 +1313,138 @@ ns.sev.drawD3ForceClusterNodes = function(clusterNodes) {
 }
 
 //--faceting
+//---set input Object for faceting
+//---arguements:
+//----resultSolr (Object) (input data for appropriate input data for transformation)
+//---return: facetDocs (Object) (input data for faceting)
+ns.sev.getFacetingJSON = function(resultSolr) {
+	var facetDocs = {"name":"", "docs":[], "facet":[]};
+	
+	//set docs
+	facetDocs.name = resultSolr.response.docs[0].query;
+	resultSolr.response.docs.forEach(function(docsItem) {
+		//set clusterDoc
+		var doc = {
+				"rank":"", 
+				"title":"", 
+				"description":"", 
+				"displayUrl":"", 
+				"url":"", 
+				"query":"", 
+				"tooltip":"faceting"};
+		doc.rank = docsItem.rank;
+		doc.title = docsItem.title;
+		doc.description = docsItem.description;
+		doc.displayUrl = docsItem.displayUrl;
+		doc.url = docsItem.url;
+		doc.query = docsItem.query;
+
+		facetDocs.docs.push(doc);
+	});	
+	
+	//set faceting
+	var name = "";
+	var docsNumber;
+	resultSolr.facet_counts.facet_fields.text_facet.forEach(function(docsItem) {
+		if (typeof docsItem == "string") {
+			name = docsItem;
+		} else {
+			docsNumber = docsItem;
+			
+			facetDocs.facet.push({"name":name, "docsNumber":docsNumber, "tooltip":"faceting"});
+		}
+	});
+	
+	return facetDocs;
+}
+
 //---word cloud
 //---arguements:
-//----clusterTree (Object) (input data for define nodes and links)
-ns.sev.drawD3WordCloud = function() {
+//----facetDocs (Object) (input data for define faceting (word cloud))
+ns.sev.drawD3WordCloud = function(facetDocs) {
 	//size
 	var width = parseInt(d3.select("div.cluster").style('width'), 10);
-	var areaRatio = .6;
+	var areaRatio = .2;
 	var height = width * areaRatio;
 	
+	var root = facetDocs;
+	
 	var fill = d3.scale.category20();
+		
 	d3.layout.cloud().size([width, height])
-	.words([
-	        "Hello", "world", "normally", "you", "want", "more", "words",
-	        "than", "this"].map(function(d) {
-	        	return {text: d, size: 10 + Math.random() * 90};
-	        }))
-	        .padding(5)
-	        .rotate(function() { return 0; })
-	        .font("Impact")
-	        .fontSize(function(d) { return d.size; })
-	        .on("end", draw)
-	        .start();
+		.words(root.facet)
+        .padding(2)
+        .rotate(function() { return 0; })
+        .font("Impact")
+        .fontSize(function(d) { return getFontSize(d); })
+        .text(function(d) { return d.name; })
+        .on("end", draw)
+	    .start();
+	
+	//inner functions (respective callbacks)
+	//-draw words
 	function draw(words) {
 		d3.select("div#draw-word-cloud").append("svg")
-		.attr("width", width)
-		.attr("height", height)
+			.attr("width", width)
+			.attr("height", height)
 		.append("g")
-		.attr("transform", "translate( "+ width/2 + "," + height/2 + ")")
+			.attr("transform", "translate( "+ width / 2 + "," + height / 2 + ")")
 		.selectAll("text")
-		.data(words)
+			.data(words)
 		.enter().append("text")
-		.style("font-size", function(d) { return d.size + "px"; })
-		.style("font-family", "Impact")
-		.style("fill", function(d, i) { return fill(i); })
-		.attr("text-anchor", "middle")
-		.attr("transform", function(d) {
-			return "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")";
-		})
-		.text(function(d) { return d.text; });
+			.style("font-size", function(d) { return getFontSize(d) + "px"; })
+			.style("font-family", "Impact")
+			.style("fill", function(d, i) { return fill(i); })
+			.style("cursor", "pointer")
+			.attr("text-anchor", "middle")
+			.attr("transform", function(d) {
+				return "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")";
+			})
+			.text(function(d) { return d.name; })
+		    .on("mouseover.tooltip", ns.sev.mouseoverShowTooltip)
+			.on("mouseout.tooltip", ns.sev.mouseoutHideTooltip)
+			.on("click.solr", ajaxSolrFaceting)
+			.on("click.tooltip", ns.sev.mouseoutHideTooltip);
+	}
+	
+	//-get font-size
+	function getFontSize(d) {
+		return ( 15 + .75 * d.docsNumber * (width / (width + 1000)) );
+	}
+	
+	//-solr query
+	function ajaxSolrFaceting(d) {
+		var solr_qt = "/select";
+		var solr_q = "q=*%3A*";
+		var solr_fq = "fq=" + d.name;
+		var solr_rows = "rows=100"
+		var solrQuery = ns.sev.solr.url + solr_qt + "?" + 
+			solr_q + "&" +
+			solr_fq + "&" +
+			solr_rows + "&" +
+			ns.sev.solr.wt + "&" + 
+			ns.sev.solr.facet;
+		
+		$.ajax({
+			url: solrQuery,
+			dataType: 'jsonp',
+			jsonp: 'json.wrf',
+			success: function(response){
+				ns.sev.resultSolrSelectJSON = response;
+				//ns.sev.afterAJAX();
+				//remove special svg
+				$("div#word-cloud svg").remove();
+				//-draw layout
+				ns.sev.resultFacetingJSON = ns.sev.getFacetingJSON(ns.sev.resultSolrSelectJSON);
+				ns.sev.drawD3WordCloud(ns.sev.resultFacetingJSON);
+				//-refresh the SERPs table
+				ns.sev.refreshSerps(ns.sev.resultSolrSelectJSON);
+			},
+			error: function (xhr, err) {
+	            console.log(xhr);
+	            console.log(err);
+	        }
+		});
 	}
 }
 
@@ -1438,6 +1545,10 @@ ns.sev.mouseoverShowTooltip = function(d, i) {
 		html += "</h5>";
 		html += "<p class='text-success'>" + d.displayUrl + "</p>";
 		html += "<p>" + d.description + "</p>";
+	} else if ( d.tooltip == "faceting" ) {
+	//--faceting
+		html += "<h5>Result refinement: <span class='text-success'><strong>" + d.name + "</strong></span></h5>";
+		html += "<p><span class='text-success'><strong>" + d.docsNumber + "</strong></span> result pages</p>";
 	}
 	
 	//set tooltip options
@@ -1513,10 +1624,14 @@ ns.sev.responsiveD3 = function() {
 		//--update force cluster nodes	
 			ns.sev.resultClusterNodesJSON = ns.sev.getClusterNodesJSON(ns.sev.resultSolrJSON);
 			ns.sev.drawD3ForceClusterNodes(ns.sev.resultClusterNodesJSON);
+		} else if ( $("div#word-cloud").css("display") == "block" ) {
+		//--update word cloud	
+			ns.sev.resultFacetingJSON = ns.sev.getFacetingJSON(ns.sev.resultSolrJSON);
+			ns.sev.drawD3WordCloud(ns.sev.resultFacetingJSON);		
 		}
 			
 		//-refresh the SERPs table
-		ns.sev.refreshSerps();
+		ns.sev.refreshSerps(ns.sev.resultSolrJSON);
 	}
 }
 
@@ -1544,7 +1659,7 @@ ns.sev.clusterPages = function(cluster, isToAdd) {
 	
 	//evaluate empty ns.sev.clusters
 	if (ns.sev.clusters.length == 0) {
-		ns.sev.refreshSerps();
+		ns.sev.refreshSerps(ns.sev.resultSolrJSON);
 		return;
 	}
 	
@@ -1580,24 +1695,30 @@ ns.sev.clusterPages = function(cluster, isToAdd) {
 /*
  * -refresh the table of SERPs
  */
-ns.sev.refreshSerps = function() {
+ns.sev.refreshSerps = function(resultSolrJSON) {
 	//reinit the global scope 
 	ns.sev.currentPage = 1;
 	ns.sev.serpsPerPage = 10;
 	ns.sev.clusters = [];
 	
+	var root = resultSolrJSON;
+	
+	//set SERPs per page
+	var end;
+	root.response.docs.length >= ns.sev.serpsPerPage ? end = ns.sev.serpsPerPage : end = root.response.docs.length;
+	
 	//set SERPS
 	var html = '';
-	for (var i = 0; i < ns.sev.serpsPerPage; i++) {
+	for (var i = 0; i < end; i++) {
 		html += "<tr>";
 			html += "<td>";
 				html += "<h5>";
-					html += "<span>" + ns.sev.resultSolrJSON.response.docs[i].rank + " | </span>";
-					html += "<a href='" + ns.sev.resultSolrJSON.response.docs[i].url + "' target='_blank'> " 
-						+ ns.sev.resultSolrJSON.response.docs[i].title + " </a>";
+					html += "<span>" + root.response.docs[i].rank + " | </span>";
+					html += "<a href='" + root.response.docs[i].url + "' target='_blank'> " 
+						+ root.response.docs[i].title + " </a>";
 				html += "</h5>";
-				html += "<p class='text-success'>" + ns.sev.resultSolrJSON.response.docs[i].displayUrl + "</p>";
-				html += "<p>" + ns.sev.resultSolrJSON.response.docs[i].description + "</p>";
+				html += "<p class='text-success'>" + root.response.docs[i].displayUrl + "</p>";
+				html += "<p>" + root.response.docs[i].description + "</p>";
 			html += "</td>";
 			html += "<td></td>";
 		html += "</tr>";
