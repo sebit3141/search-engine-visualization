@@ -18,7 +18,7 @@ ns.sev.solr.facet = "facet=true&facet.field=text_facet"
 
 ns.sev.solr.urlLocal = "http://localhost:5000/sevCore";
 ns.sev.solr.urlHeroku = "https://solr-clustering.herokuapp.com/sevCore";
-ns.sev.solr.url = ns.sev.solr.urlHeroku;
+ns.sev.solr.url = ns.sev.solr.urlLocal;
 
 ns.sev.solr.query = ns.sev.solr.url + ns.sev.solr.qt + "?" + ns.sev.solr.wt + "&" + ns.sev.solr.facet;
 
@@ -38,7 +38,7 @@ ns.sev.loadScript = function() {
 	ns.sev.ajaxSolrClustering();
 	
 	//-bold the query string
-	ns.sev.setQueryStringBold();
+	ns.sev.setQueryStringBold(document.getElementById("input-query").value, "hilitor");
 	
 	//-event handler
 	$("#loadButton").click(function(event) {
@@ -51,11 +51,22 @@ ns.sev.loadScript = function() {
  */
 ns.sev.afterAJAX = function() {
 	//-D3 visualization
-	//--initial view layout: tree
-	ns.sev.resultClusterTreeJSON = ns.sev.getClusterTreeJSON(ns.sev.resultSolrJSON);
-	ns.sev.drawD3Tree(ns.sev.resultClusterTreeJSON);
+	//--initial view layout: word cloud
+	ns.sev.resultFacetingJSON = ns.sev.getFacetingJSON(ns.sev.resultSolrJSON);
+	ns.sev.drawD3WordCloud(ns.sev.resultFacetingJSON);
 	
-	//--on click layout
+	//--on click d3 layout
+	//--word cloud
+	$("li#tab-word-cloud").click( function(){
+		//remove special svg
+		$("div#word-cloud svg").remove();
+		//-draw layout
+		ns.sev.resultFacetingJSON = ns.sev.getFacetingJSON(ns.sev.resultSolrJSON);
+		ns.sev.drawD3WordCloud(ns.sev.resultFacetingJSON);
+		//-refresh the SERPs table
+		ns.sev.refreshSerps(ns.sev.resultSolrJSON);
+	});
+	//--tree
 	$("li#tab-tree").click( function(){
 		//-remove special svg
 		$("div#draw-tree svg").remove();
@@ -105,16 +116,6 @@ ns.sev.afterAJAX = function() {
 		//-refresh the SERPs table
 		ns.sev.refreshSerps(ns.sev.resultSolrJSON);
 	});
-	//--word cloud
-	$("li#tab-word-cloud").click( function(){
-		//remove special svg
-		$("div#word-cloud svg").remove();
-		//-draw layout
-		ns.sev.resultFacetingJSON = ns.sev.getFacetingJSON(ns.sev.resultSolrJSON);
-		ns.sev.drawD3WordCloud(ns.sev.resultFacetingJSON);
-		//-refresh the SERPs table
-		ns.sev.refreshSerps(ns.sev.resultSolrJSON);
-	});
 	
 	//--set layouts responsive
 	ns.sev.responsiveD3();
@@ -140,25 +141,26 @@ ns.sev.ajaxSolrClustering = function() {
 }
 
 /*
- * -Bold query string
+ * -Bold string
  */
-ns.sev.setQueryStringBold = function() {
-	var queryStr = document.getElementById("input-query").value;
-	var myHilitor = new Hilitor("hilitor"); 
+//--arguements:
+//---stringKeyWords (String) (input string, which set the idContent bold)
+//---idContent (String) (input css selector, which will be set bold)
+ns.sev.setQueryStringBold = function(stringKeyWords, idContent) {
+	var myHilitor = new Hilitor(idContent); 
 	
-	myHilitor.apply(queryStr);
+	myHilitor.apply(stringKeyWords);
 }
 
 /*
  * -Load next SERPs (Button: load next items)
  */
-//---arguements:
-//----event (Object) (event)
+//--arguements:
+//---event (Object) (event)
 ns.sev.loadNextPageClient = function(event, solrJSON) {
 	if(event != null) {
 		event.preventDefault();
 	}
-	ns.sev.startRefresh();
 	
 	var root = solrJSON;
 	
@@ -166,7 +168,11 @@ ns.sev.loadNextPageClient = function(event, solrJSON) {
 	var html = "";
 	var i = ns.sev.currentPage*ns.sev.serpsPerPage;
 	var end = i + ns.sev.serpsPerPage;
+
+	//hide loadButton
+	ns.sev.startRefresh();
 	
+	//set SERPS
 	for (; i < end && root.response.docs[i] !== undefined ; i ++) {
 		html += "<tr>";
 			html += "<td>";
@@ -177,29 +183,32 @@ ns.sev.loadNextPageClient = function(event, solrJSON) {
 				html += "<p class='text-success'>" + root.response.docs[i].displayUrl + "</p>";
 				html += "<p>" + root.response.docs[i].description + "</p>";
 			html += "</td>";
-			html += "<td></td>";
 		html += "</tr>";
 	}
 	$("table.table").find("tr.loadNextRow").before(html);
-	ns.sev.finishRefresh();
+	
+	//show loadButton
+	if ( i < root.response.docs.length ) {
+		ns.sev.finishRefresh();
+	}
 	
 	//increment the current page
 	ns.sev.currentPage++;
 	
 	//bold the query string
-	ns.sev.setQueryStringBold();
+	ns.sev.setQueryStringBold(document.getElementById("input-query").value, "hilitor");
 }
 
 //hide the #loadButton and add a Spinner
 ns.sev.startRefresh = function() {
 	$("#loadButton").css("display","none");
-	$("#loadButton").after("<i class='fa fa-refresh fa-spin'  style='color:#337ab7'></i>")
+	//$("#loadButton").after("<i class='fa fa-refresh fa-spin'  style='color:#337ab7'></i>")
 }
 
 //show the #loadButton and remove the Spinner
 ns.sev.finishRefresh = function() {
 	$("#loadButton").css("display","inline");
-	$(".fa-spin").remove()
+	//$(".fa-spin").remove()
 }
 
 /*
@@ -268,32 +277,31 @@ ns.sev.drawD3Tree = function(clusterTree) {
 
 	var i = 0;
 	var duration = 500;
-	var root;
 	
-	//-layout
+	//define root
+	var root = clusterTree;
+	root.x0 = heightMargin / 2;
+	root.y0 = 0;
+	
+	//layout
 	var tree = d3.layout.tree()
 		.size([heightMargin, widthMargin]);
 
-	//-accessor function
+	//accessor function
 	var diagonal = d3.svg.diagonal()
 		.projection(function(d) { return [d.y, d.x]; });
 
-	//-svg container
+	//svg container
 	var svg = d3.select("div#draw-tree").append("svg")
 		.style("width", width + "px")
 		.style("height", height + "px")
 	.append("g")
 		.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-	//-define root
-	root = clusterTree;
-	root.x0 = heightMargin / 2;
-	root.y0 = 0;
-	
-	//-call collapse
+		
+	//call collapse
 	root.children.forEach(collapse);
 	
-	//-call drawing
+	//call drawing
 	update(root);
 
 	//set ability to collapse
@@ -304,8 +312,9 @@ ns.sev.drawD3Tree = function(clusterTree) {
 			d.children = null;
 		}
 	}
-		
-	//update layout
+	
+	//-functions
+	//--update layout
 	function update(source) {
 
 		//-Compute the new tree layout.
@@ -432,7 +441,7 @@ ns.sev.drawD3Tree = function(clusterTree) {
 		});
 	}
 
-	//on.click: toggle children  
+	//-on.click: toggle children  
 	function toggleNodeOnClick(d) {
 		if (d.children) {
 		//-collapse
@@ -457,69 +466,6 @@ ns.sev.drawD3Tree = function(clusterTree) {
 		}
 		update(d);
 	}
-	
-	//on.mouseOver: get infobox (only leaf nodes) 
-	function mouseOverInfobox(d) {
-		//-verify leaf node
-		if (!d.rank) {return}
-		//-function main statement
-		var foreignO = svg.append('foreignObject')
-			.attr({
-		        "width": width/3,
-				"class": "svg-foreignO"
-			});
-		//-div
-		var div = foreignO.append('xhtml:div')
-			.append('div')
-			.attr("class", "infobox");
-		//--h5
-		var h5 = div.append("h5")
-		h5.append("span")
-			.html(d.rank + " | ");
-		h5.append("a")
-			.html(d.title);
-		//--p
-		div.append("p")
-			.attr("class", "text-success")
-			.html(d.displayUrl);
-		//--p
-		div.append("p")
-			.html(d.description);
-		
-		//set height
-		var foHeight = div[0][0].getBoundingClientRect().height;
-		foreignO.attr("height", foHeight);
-		
-		//set position
-		var padding = 50;
-		var infoboxHeight = foHeight + padding + 5;
-		if ( (d.x + infoboxHeight) > height && infoboxHeight < d.x ) {
-		//-infobox max bottom
-			foreignO.attr({
-	            "x": d.y + padding,
-	            "y": d.x - padding - foHeight
-			});
-		} else if ( (d.x + infoboxHeight) > height && infoboxHeight > d.x ) {
-		//-infobox max top
-			foreignO.attr({
-	            "x": 0,
-	            "y": 0
-			});			
-		} else {
-			foreignO.attr({
-	            "x": d.y + padding,
-	            "y": d.x + padding
-			});
-		}
-	}
-	
-	//on.mouseOut: remove infobox
-	function mouseOutInfobox(d) {
-		//-verify leaf node
-		if (!d.rank) {return}
-		//-function main statement
-        svg.selectAll('.svg-foreignO').remove()
-	}
 }
 
 //---radial Tree 
@@ -534,25 +480,26 @@ ns.sev.drawD3TreeRadial = function(clusterTree) {
 	var radius = height * .3;
 	var root = clusterTree;
 
-	//-layout
+	//layout
 	var tree = d3.layout.tree()
 		.size([360, radius])
 		.separation(function(a, b) { return (a.parent == b.parent ? 1 : 2) / a.depth; });
 
-	//-accessor function
+	//accessor function
 	var diagonal = d3.svg.diagonal.radial()
 		.projection(function(d) { return [d.y, d.x / 180 * Math.PI]; });
 
-	//-svg container
+	//svg container
 	var svg = d3.select("div#draw-radial-tree").append("svg")
 		.attr("width", width)
 		.attr("height", height)
 	.append("g")
 		.attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
 
-	//-call drawing
+	//call drawing
 	update(root);
 	
+	//functions
 	//-compute layout
 	function update(root) {
 		//-runs the tree layout: compute nodes and links
@@ -659,7 +606,7 @@ ns.sev.getLinksNodesForceJSON = function(resultSolr) {
 	links.forEach(function(link) {
 		//link.source = nodes[link.source] || (nodes[link.source] = {name: link.source});
 		source = link.source;
-		if (  nodes[source] === undefined ) {
+		if ( nodes[source] === undefined ) {
 			//-set name for links and nodes
 			nodes[source] = {name: source};
 			link.source = nodes[source];
@@ -921,7 +868,7 @@ ns.sev.drawD3ForceSearchGraph = function(clusterTree) {
 	  //g.circle
 	  nodeEnter.append("circle")
 	  	.attr("r", function(d) { return (d.rank ? radius : radius * 1.5); })
-	    .style('fill-opacity', 0.5)
+	    .style('fill-opacity', function(d) { return (d.depth == 0 ? 1 : 0.5); })
 	    .style('fill', function(d) {
     		if (d.rank) {
     			var h = 120,s,l = .80;
@@ -1086,12 +1033,12 @@ ns.sev.getClusterNodesJSON = function(resultSolr) {
 			clusterDoc.clusterName = clustersItem.labels[0];
 			clusterDoc.clusterDocs = clustersItem.docs;
 			clusterDoc.cluster = clusterIndex;
-			
-			clusterNodes.nodes.push(clusterDoc);
 			//clusterDoc.radius = 40 - Math.floor((clusterDoc.rank / resultSolr.response.docs.length) * 10);
 			//r = Math.sqrt((i + 1) / m * -Math.log(Math.random())) * maxRadius
 			var rank = clusterDoc.rank, length = resultSolr.response.docs.length, maxRadius = 20;
 			clusterDoc.radius = Math.sqrt( 0.5 * (rank/length + 1) * -Math.log(rank/(length + 20)) ) * maxRadius;
+	
+			clusterNodes.nodes.push(clusterDoc);
 		});	
 	});
 	
@@ -1402,7 +1349,7 @@ ns.sev.drawD3WordCloud = function(facetDocs) {
 	
 	//-get font-size
 	function getFontSize(d) {
-		return ( 15 + .75 * d.docsNumber * (width / (width + 1000)) );
+		return ( 15 + 150 * Math.log(1 + d.docsNumber / root.facet[0].docsNumber) * (width / (width + 2000)) );
 	}
 	
 	//-tag concatenation 
@@ -1448,9 +1395,8 @@ ns.sev.drawD3WordCloud = function(facetDocs) {
 				//-refresh the SERPs table
 				ns.sev.refreshSerps(ns.sev.resultSolrSelectJSON);
 				
-				//sow Tags
+				//show Tags
 				showTags();
-
 			},
 			error: function (xhr, err) {
 	            console.log(xhr);
@@ -1463,10 +1409,9 @@ ns.sev.drawD3WordCloud = function(facetDocs) {
 	function showTags() {
 		//set SERPs per page
 		var end = root.facetTags.length;
-		
-		//set SERPS
 		var html = '';
 		
+		//set SERPS		
 		html += '<div id="faceting_tags" class="btn-toolbar">';
 		for (var i = 0; i < end; i++) {
 			html += '<div id="btn-group-'+ root.facetTags[i] +'" class="btn-group btn-group-sm" style="margin-bottom: 10px">';
@@ -1479,7 +1424,6 @@ ns.sev.drawD3WordCloud = function(facetDocs) {
 		html += '</div>';
 		
 		//refresh the SERPs table 
-		//$("div#faceting_tags").remove();
 		$("div#draw-word-cloud").find("svg").before(html);
 		
 		//set mouse events
@@ -1499,10 +1443,11 @@ ns.sev.drawD3WordCloud = function(facetDocs) {
 				//modify array facetTags
 				root.facetTags = [itemTag]; 
 				//ajax
-				ajaxSolrFaceting();
-				//remove old faceting tag
-				//$("div#btn-group-" + itemTag).remove();				
+				ajaxSolrFaceting();			
 			});
+			
+			//-bold the tag string  
+			ns.sev.setQueryStringBold(document.getElementById("btn-" + itemTag).textContent, "hilitor");
 		});
 	} 
 }
@@ -1572,7 +1517,7 @@ ns.sev.onClickFocusAhref = function(d) {
 ns.sev.mouseoverShowTooltip = function(d, i) {
 	//function main statement
 	var html = '';
-	var templ = '<div class="tooltip" role="tooltip"><div class="tooltip-inner"></div></div>';
+	var templ = '<div class="tooltip" role="tooltip"><div id="ns-sev-tooltip" class="tooltip-inner"></div></div>';
 	
 	//verify nodes to set html 
 	if ( d.tooltip == "query" ) {
@@ -1618,6 +1563,9 @@ ns.sev.mouseoverShowTooltip = function(d, i) {
         container: 'div#clusterTabContent',
         placement: 'auto'
     }).tooltip('show');
+    
+    //-bold the query string
+	ns.sev.setQueryStringBold(document.getElementById("input-query").value, "ns-sev-tooltip");
 }
 
 //---on mouseout remove/hide D3/Bootstrap tooltip (infobox)
@@ -1625,7 +1573,8 @@ ns.sev.mouseoverShowTooltip = function(d, i) {
 //----d (Object) (d3 datum)
 //----i (Number) (index)
 ns.sev.mouseoutHideTooltip = function(d, i) {
-    $(".tooltip").tooltip('hide');
+    //$(".tooltip").tooltip('hide');
+	$(".tooltip").remove();
 }
 
 //--D3 svg-text truncate 
@@ -1744,25 +1693,25 @@ ns.sev.clusterPages = function(cluster, isToAdd) {
 				html += "<p class='text-success'>" + root.response.docs[item-1].displayUrl + "</p>";
 				html += "<p>" + root.response.docs[item-1].description + "</p>";
 			html += "</td>";
-			html += "<td></td>";
 		html += "</tr>";
 	})
 	$("tbody#hilitor tr").remove();
 	$("table.table").find("tbody#hilitor").append(html);
 	
-	ns.sev.setQueryStringBold();
+	//bold the query string
+	ns.sev.setQueryStringBold(document.getElementById("input-query").value, "hilitor");
 }
 
 /*
  * -refresh the table of SERPs
  */
-ns.sev.refreshSerps = function(resultSolrJSON) {
+ns.sev.refreshSerps = function(solrJSON) {
 	//reinit the global scope 
 	ns.sev.currentPage = 1;
 	ns.sev.serpsPerPage = 10;
 	ns.sev.clusters = [];
 	
-	var root = resultSolrJSON;
+	var root = solrJSON;
 	
 	//set SERPs per page
 	var end;
@@ -1781,25 +1730,26 @@ ns.sev.refreshSerps = function(resultSolrJSON) {
 				html += "<p class='text-success'>" + root.response.docs[i].displayUrl + "</p>";
 				html += "<p>" + root.response.docs[i].description + "</p>";
 			html += "</td>";
-			html += "<td></td>";
 		html += "</tr>";
 	}
 	
 	//set load Button
-	html += '<tr class="loadNextRow">'
-		html += '<td colspan="2" class="loadNextColumn">'
-			html += '<div style="text-align: center">'
-				html += '<strong> <a id="loadButton">load next 10 items</a></strong>'
-			html += '</div>'
-		html += '</td>'
-	html += '</tr>'
+	if ( root.response.docs.length > ns.sev.serpsPerPage && end >= ns.sev.serpsPerPage ) {
+		html += '<tr class="loadNextRow">';
+			html += '<td colspan="2" class="loadNextColumn">';
+				html += '<div style="text-align: center">';
+					html += '<strong> <a id="loadButton">load next items</a></strong>';
+				html += '</div>';
+			html += '</td>';
+		html += '</tr>';
+	}
 	
 	//refresh the SERPs table 
 	$("tbody#hilitor tr").remove();
 	$("table.table").find("tbody#hilitor").append(html);
 	
 	//-bold the query string
-	ns.sev.setQueryStringBold();	
+	ns.sev.setQueryStringBold(document.getElementById("input-query").value, "hilitor");	
 
 	//-event handler (reassign the Button to the listenr)
 	$("#loadButton").click(function(event) {

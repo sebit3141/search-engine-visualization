@@ -8,13 +8,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import de.sebit.sev.dto.ResultDTO;
+import de.sebit.sev.service.ProxyService;
 import de.sebit.sev.service.SearchService;
 
 @Controller
@@ -25,8 +25,11 @@ public class QueryController {
 	@Autowired
 	private SearchService searchService;
 	
+	@Autowired
+	private ProxyService proxyService;
+	
 	/**
-	 * Control the incoming query parameter.
+	 * control the search service with the incoming query parameter
 	 */
 	@RequestMapping(value = "/search", method = RequestMethod.GET)
 	public String search(@RequestParam(value="query", required=false) String query, Locale locale, Model model) {
@@ -52,13 +55,13 @@ public class QueryController {
 	}
 
 	/**
-	 * Control the query for the next SERPs (AJAX handling). 
+	 * control proxy service (AJAX handling). 
 	 */
 	@ResponseBody
-	@RequestMapping(value = "/page/{page}")
-	public List<ResultDTO> getPageLatest(@PathVariable int page) {
-        System.out.println("ajax______________page: " + page);
+	@RequestMapping(value = "/ajax", method = RequestMethod.GET)
+	public String getDomain(@RequestParam(value="url", required=false) String url) {
+        System.out.println("ajax - url: " + url);
 
-        return searchService.bingService.getBingResultDTOList("home", page);
+        return proxyService.getDomainContent(url);
 	}
 }

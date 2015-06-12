@@ -9,6 +9,7 @@ function Hilitor(id, tag)
 	var matchRegex = "";
 	var openLeft = false;
 	var openRight = false;
+	var el;
 
 	this.setMatchType = function(type)
 	{
@@ -86,7 +87,7 @@ function Hilitor(id, tag)
 	// start highlighting at target node
 	this.apply = function(input)
 	{
-		this.remove();
+		//this.remove();
 		if(input === undefined || !input) return;
 		this.setRegex(input);
 		this.hiliteWords(targetNode);

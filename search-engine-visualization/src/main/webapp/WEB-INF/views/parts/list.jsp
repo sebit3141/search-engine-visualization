@@ -23,16 +23,13 @@
 					<p>
 						<c:out value="${result.description}" />
 					</p>
-
 				</td>
-				<td><a href='<spring:url value="${result.displayUrl}" />'
-					class="btn btn-danger triggerRemove"> remove </a></td>
 			</tr>
 		</c:forEach>
 		<tr class="loadNextRow">
 			<td class="loadNextColumn" colspan="2">
 				<div style="text-align: center">
-					<strong><a id="loadButton">load next 10 items</a></strong>
+					<strong><a id="loadButton">load next items</a></strong>
 				</div>
 			</td>
 		</tr>

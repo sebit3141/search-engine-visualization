@@ -22,7 +22,7 @@ public class BingService {
         query.setAppid(appId);   
         query.setMarket("de-DE");
         query.setPerPage(50);
-        System.out.println("----------------------BingService"); 
+        System.out.println("Initiate-BingService"); 
 	}
 
 //->
@@ -89,7 +89,6 @@ public class BingService {
         	   //add result to List
         	   resultDTOList.add(resultDTO);
 
-        	   System.out.println("------------" + resultDTOList.size());
         	   System.out.println(resultDTO.getRank());
         	   System.out.println(resultDTO.getTitle());
         	   System.out.println(resultDTO.getUrl());
