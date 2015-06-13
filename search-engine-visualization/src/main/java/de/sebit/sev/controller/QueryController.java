@@ -11,10 +11,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-
 import de.sebit.sev.dto.ResultDTO;
-import de.sebit.sev.service.ProxyService;
 import de.sebit.sev.service.SearchService;
 
 @Controller
@@ -24,10 +21,7 @@ public class QueryController {
 	
 	@Autowired
 	private SearchService searchService;
-	
-	@Autowired
-	private ProxyService proxyService;
-	
+		
 	/**
 	 * control the search service with the incoming query parameter
 	 */
@@ -46,22 +40,11 @@ public class QueryController {
 		model.addAttribute("resultDTOListJSON", resultDTOListJSON); // View access: footer.jsp
 		
 		//to delete
-		System.out.println("/search____________ query: " + query);
-		System.out.println("/search____________ resultDTOList: " + resultDTOList);
-		System.out.println("/search____________ resultDTOListJSON: " + resultDTOListJSON);
+		System.out.println("/search - query: " + query);
+		System.out.println("/search - resultDTOList: " + resultDTOList);
+		System.out.println("/search - resultDTOListJSON: " + resultDTOListJSON);
 
 		//call View
 		return "search";
-	}
-
-	/**
-	 * control proxy service (AJAX handling). 
-	 */
-	@ResponseBody
-	@RequestMapping(value = "/ajax", method = RequestMethod.GET)
-	public String getDomain(@RequestParam(value="url", required=false) String url) {
-        System.out.println("ajax - url: " + url);
-
-        return proxyService.getDomainContent(url);
 	}
 }

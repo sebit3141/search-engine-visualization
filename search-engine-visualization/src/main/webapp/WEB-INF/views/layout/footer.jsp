@@ -19,14 +19,15 @@
 <script src="resources/js/highlight/jquery.highlight.js"></script>
 -->
 
-<!-- js.Custom: glabal scope (namespace) -->
+<!-- js.Custom: glabal scope (namespace) 
 <script>
 	var ns = ns || {};
 	ns.sev = ns.sev || {};
 	ns.sev.resultDTOListJSON = ${resultDTOListJSON};
 </script>
+-->
 
-<!-- js.Custom: load functionalities of Script.js -->
+<!-- js.Custom.local: load functionalities of script.js and define glabal scope (namespace)  -->
 <script>
 	var ns = ns || {};
 	ns.sev = ns.sev || {};

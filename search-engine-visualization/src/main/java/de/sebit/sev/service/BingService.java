@@ -20,43 +20,10 @@ public class BingService {
 	public BingService() {
 		query = new AzureSearchWebQuery();
         query.setAppid(appId);   
-        query.setMarket("de-DE");
+        query.setMarket("en-US");
         query.setPerPage(50);
         System.out.println("Initiate-BingService"); 
 	}
-
-//->
-	public void search() {  
-		//AzureSearchWebQuery query = new AzureSearchWebQuery();        
-        query.setQuery("Mond");
-        
- // The results are paged. You can get 50 results per page max.
- // This example gets 150 results
-        int j = 0;
-        for (int i=2; i<=2 ; i++) {
-           query.setPage(i);
-           query.doQuery();
-           AzureSearchResultSet<AzureSearchWebResult> ars = query.getQueryResult();
-           for (AzureSearchWebResult result : ars) {
-        	j++;
-            System.out.println("id: " + j); 
-            System.out.println(result.getId());
-            System.out.println(result.getTitle());
-            System.out.println(result.getUrl());
-            System.out.println(result.getDisplayUrl());
-            System.out.println(result.getDescription()); 
-            System.out.println(query.getAdditionalUrlQuery());
-            System.out.println(query.getAppid());
-            System.out.println(query.getPath());
-            System.out.println(query.getQuery());
-            System.out.println(query.getQueryExtra());
-            System.out.println(query.getQueryPath());
-            System.out.println(query.getUrlQuery());
-            System.out.println("----------------------"); 
-           }
-        }
-	}
-//<-
 	
 	/**
 	 * Get SERPs (as DTO) from the search engine Bing. 

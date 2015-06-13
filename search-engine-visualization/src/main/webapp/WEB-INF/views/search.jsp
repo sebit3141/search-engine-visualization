@@ -14,7 +14,7 @@
 		</div>
 		<ul class="nav nav-tabs">
 			<li class="active" id="tab-word-cloud"><a aria-expanded="false" href="#word-cloud"
-				data-toggle="tab">Key Word Refinement</a></li>
+				data-toggle="tab">Result Pages Refinement</a></li>
 			<li class="" id="tab-tree"><a aria-expanded="true" href="#tree"
 				data-toggle="tab">Tree</a></li>
 			<li class="" id="tab-radial-tree"><a aria-expanded="true" href="#radial-tree"

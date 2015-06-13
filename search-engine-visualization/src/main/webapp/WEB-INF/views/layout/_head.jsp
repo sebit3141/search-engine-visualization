@@ -14,55 +14,67 @@
 
 <!-- CSS -->
 
-<!-- css.bootstrap: Latest compiled and minified CSS 
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
--->
-<!-- css.bootstrap: Latest compiled CSS -->
+<!-- css.bootstrap.cdn: Latest compiled CSS -->
+<!--
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.css">
+-->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
 
-<!-- css.bootstrap: Font Awesome -->
+<!-- css.bootstrap.cdn: Font Awesome -->
 <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
 
-<!-- css.bootstrap: Optional theme 
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap-theme.min.css">
--->
-
-<!-- css.Custom -->
-<link href="resources/css/styles.css" rel="stylesheet">	
-
-<!-- css.Custom.Fonts 
+<!-- css.bootstrap.local: Font Awesome 
 <link href="resources/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
 -->
 
-<!-- JS (libraries)-->
+<!-- css.bootstrap.cdn: Optional theme 
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap-theme.min.css">
+-->
 
-<!-- js.jQuery -->
+<!-- css.custom.local -->
+<!-- 
+<link href="resources/css/styles.css" rel="stylesheet">	
+-->
+<link href="resources/css/styles.min.css" rel="stylesheet">	
+
+<!-- JS -->
+
+<!-- js.jQuery.cdn -->
 <script	src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
 
-<!-- js.bootstrap: Latest compiled and minified JavaScript -->
+<!-- js.bootstrap.cdn: Latest compiled and minified JavaScript -->
 <script	src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
 
-<!-- js.d3 -->
+<!-- js.d3.local -->
 <script type="text/javascript" src="resources/js/d3/d3.min.js"></script>
-<script type="text/javascript" src="resources/js/d3/d3.layout.cloud.js"></script>
 
 <!--
 <script	src="http://d3js.org/d3.v3.min.js"></script>
 <script type="text/javascript" src="resources/js/d3/d3.min.js"></script>
 <script type="text/javascript" src="resources/js/d3/d3plus.min.js"></script>
  -->
+
+<!-- js.d3.layout.cloud.local -->
+<!--
+<script type="text/javascript" src="resources/js/d3/d3.layout.cloud.js"></script>
+-->
+<script type="text/javascript" src="resources/js/d3/d3.layout.cloud.min.js"></script>
+
 <!-- load D3plus with all dependencies 
 <script src="resources/js/d3/d3plus.full.min.js"></script>
 -->
-<!-- js.vis.org 
-<script type="text/javascript" src="resources/js/vis/vis.min.js"></script>
--->
 
-<!-- js.underscore -->
+<!-- js.underscore.local -->
 <script type="text/javascript" src="resources/js/underscore/underscore-min.js"></script>
 
-<!-- js.highlight -->
-<script type="text/javascript" src="resources/js/highlight/hilitor-bold.js"></script>
+<!-- js.highlight.local -->
+<!--
+<script type="text/javascript" src="resources/js/highlight/hilitor-highlight.js"></script>
+-->
+<script type="text/javascript" src="resources/js/highlight/hilitor-highlight.min.js"></script>
 
-<!-- JS (custom statements)-->
-<script src="resources/js/scripts.js"></script>
+<!-- js.custom.local (custom statements) -->
+<!--
+<script src="resources/js/script/script.js"></script>
+-->
+<script src="resources/js/script/script.min.js"></script>

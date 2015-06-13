@@ -1551,8 +1551,8 @@ ns.sev.mouseoverShowTooltip = function(d, i) {
 		html += "<p>" + d.description + "</p>";
 	} else if ( d.tooltip == "faceting" ) {
 	//-faceting: word cloud
-		html += "<h5>Result refinement: <span class='text-success'><strong>" + d.name + "</strong></span></h5>";
-		html += "<p><span class='text-success'><strong>" + d.docsNumber + "</strong></span> result pages</p>";
+		html += "<h5>Keyword: <span class='text-success'><strong>" + d.name + "</strong></span></h5>";
+		html += "<p>get <span class='text-success'><strong>" + d.docsNumber + "</strong></span> result pages</p>";
 	}
 	
 	//set tooltip options
