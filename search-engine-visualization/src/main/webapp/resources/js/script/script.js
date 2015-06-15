@@ -8,7 +8,20 @@ ns.sev = ns.sev || {};
 //--declare global scope
 ns.sev.currentPage = 1;
 ns.sev.serpsPerPage = 10;
-ns.sev.clusters = [];
+ns.sev.clusteredSerpList = [];
+
+//---CSS Selection
+ns.sev.css = ns.sev.css || {};
+ns.sev.css.tabWordCloud = "li#tab-word-cloud";
+ns.sev.css.tabTree = "li#tab-tree";
+ns.sev.css.tabRadialTree = "li#tab-radial-tree";
+ns.sev.css.tabForceGraph = "li#tab-force-graph";
+ns.sev.css.tabForceSearchGraph = "li#tab-force-search-graph";
+ns.sev.css.tabForceClusterNodes = "li#tab-force-cluster-nodes";
+ns.sev.css.tabDropdown = "li#tab-dropdown-cluster-algo";
+ns.sev.css.tabLingo = "li#tab-lingo";
+ns.sev.css.tabStc = "li#tab-stc";
+ns.sev.css.tabKmeans = "li#tab-kmeans";
 
 //---Solr
 ns.sev.solr = {};
@@ -16,6 +29,10 @@ ns.sev.solr.qt = "/clustering";
 ns.sev.solr.wt = "wt=json";
 ns.sev.solr.facet = "facet=true&facet.field=text_facet"
 
+ns.sev.solr.ClusteringEngineLingo = "clustering.engine=lingo";
+ns.sev.solr.ClusteringEngineStc = "clustering.engine=stc";
+ns.sev.solr.ClusteringEngineKmeans = "clustering.engine=kmeans";
+	
 ns.sev.solr.urlLocal = "http://localhost:5000/sevCore";
 ns.sev.solr.urlHeroku = "https://solr-clustering.herokuapp.com/sevCore";
 ns.sev.solr.url = ns.sev.solr.urlLocal;
@@ -24,6 +41,9 @@ ns.sev.solr.query = ns.sev.solr.url + ns.sev.solr.qt + "?" + ns.sev.solr.wt + "&
 
 //---Solr response and transformations
 ns.sev.resultSolrJSON = {};
+ns.sev.resultSolrClusteringLingoJSON = {};
+ns.sev.resultSolrClusteringStcJSON = {};
+ns.sev.resultSolrClusteringKmeansJSON = {};
 ns.sev.resultSolrSelectJSON = {};
 ns.sev.resultClusterTreeJSON = {};
 ns.sev.resultLinksNodesForceJSON = {};
@@ -51,93 +71,205 @@ ns.sev.loadScript = function() {
  */
 ns.sev.afterAJAX = function() {
 	//-D3 visualization
-	//--initial view layout: word cloud
-	ns.sev.resultFacetingJSON = ns.sev.getFacetingJSON(ns.sev.resultSolrJSON);
-	ns.sev.drawD3WordCloud(ns.sev.resultFacetingJSON);
+	//--set initial view layout: word cloud
+	ns.sev.getWordCloud();
 	
-	//--on click d3 layout
-	//--word cloud
-	$("li#tab-word-cloud").click( function(){
+	//--on click: set d3 layout
+	//---word cloud
+	$(ns.sev.css.tabWordCloud).click( function(){
 		//remove special svg
 		$("div#word-cloud svg").remove();
 		//-draw layout
-		ns.sev.resultFacetingJSON = ns.sev.getFacetingJSON(ns.sev.resultSolrJSON);
-		ns.sev.drawD3WordCloud(ns.sev.resultFacetingJSON);
-		//-refresh the SERPs table
-		ns.sev.refreshSerps(ns.sev.resultSolrJSON);
+		ns.sev.getWordCloud();
 	});
-	//--tree
-	$("li#tab-tree").click( function(){
+	//---tree
+	$(ns.sev.css.tabTree).click( function(){
 		//-remove special svg
 		$("div#draw-tree svg").remove();
 		//-draw layout
-		ns.sev.resultClusterTreeJSON = ns.sev.getClusterTreeJSON(ns.sev.resultSolrJSON);
-		ns.sev.drawD3Tree(ns.sev.resultClusterTreeJSON);
-		//-refresh the SERPs table
-		ns.sev.refreshSerps(ns.sev.resultSolrJSON);
+		ns.sev.getTree();
 	});
-	//--radial tree
-	$("li#tab-radial-tree").click( function(){
+	//---radial tree
+	$(ns.sev.css.tabRadialTree).click( function(){
 		//remove special svg
 		$("div#draw-radial-tree svg").remove();
 		//-draw layout
-		ns.sev.resultClusterTreeJSON = ns.sev.getClusterTreeJSON(ns.sev.resultSolrJSON);
-		ns.sev.drawD3TreeRadial(ns.sev.resultClusterTreeJSON);
-		//-refresh the SERPs table
-		ns.sev.refreshSerps(ns.sev.resultSolrJSON);
+		ns.sev.getRadialTree();
 	});
-	//--force graph
-	$("li#tab-force-graph").click( function(){
+	//---force graph
+	$(ns.sev.css.tabForceGraph).click( function(){
 		//remove special svg
 		$("div#draw-force-graph svg").remove();
 		//-draw layout
-		ns.sev.resultLinksNodesForceJSON = ns.sev.getLinksNodesForceJSON(ns.sev.resultSolrJSON); 		
-		ns.sev.drawD3ForceGraph(ns.sev.resultLinksNodesForceJSON);
-		//-refresh the SERPs table
-		ns.sev.refreshSerps(ns.sev.resultSolrJSON);
+		ns.sev.getForceGraph();
 	});
-	//--force search graph
-	$("li#tab-force-search-graph").click( function(){
+	//---force search graph
+	$(ns.sev.css.tabForceSearchGraph).click( function(){
 		//remove special svg
 		$("div#draw-force-search-graph svg").remove();
 		//-draw layout
-		ns.sev.resultClusterTreeJSON = ns.sev.getClusterTreeJSON(ns.sev.resultSolrJSON);
-		ns.sev.drawD3ForceSearchGraph(ns.sev.resultClusterTreeJSON);
-		//-refresh the SERPs table
-		ns.sev.refreshSerps(ns.sev.resultSolrJSON);
+		ns.sev.getForceSearchGraph();
 	});
-	//--force cluster nodes
-	$("li#tab-force-cluster-nodes").click( function(){
+	//---force cluster nodes
+	$(ns.sev.css.tabForceClusterNodes).click( function(){
 		//remove special svg
 		$("div#draw-force-cluster-nodes svg").remove();
 		//-draw layout
-		ns.sev.resultClusterNodesJSON = ns.sev.getClusterNodesJSON(ns.sev.resultSolrJSON);
-		ns.sev.drawD3ForceClusterNodes(ns.sev.resultClusterNodesJSON);
-		//-refresh the SERPs table
-		ns.sev.refreshSerps(ns.sev.resultSolrJSON);
+		ns.sev.getForceClusterNodes();
 	});
 	
 	//--set layouts responsive
 	ns.sev.responsiveD3();
+	
+	//-activate dropdown clustering algorithm
+	ns.sev.setDropdownClusteringAlgorithm();
+}
+
+/*
+ * -Navs elements
+ */
+//--Tab: word cloud
+ns.sev.getWordCloud = function() {
+	//-draw layout
+	ns.sev.resultFacetingJSON = ns.sev.getFacetingJSON(ns.sev.resultSolrJSON);
+	ns.sev.drawD3WordCloud(ns.sev.resultFacetingJSON);
+	//-refresh the SERPs table
+	ns.sev.refreshSerps(ns.sev.resultSolrJSON);
+}
+
+//--Tab: tree
+ns.sev.getTree = function() {
+	//-draw layout
+	ns.sev.resultClusterTreeJSON = ns.sev.getClusterTreeJSON(ns.sev.resultSolrJSON);
+	ns.sev.drawD3Tree(ns.sev.resultClusterTreeJSON);
+	//-refresh the SERPs table
+	ns.sev.refreshSerps(ns.sev.resultSolrJSON);
+}
+
+//--Tab: radial tree
+ns.sev.getRadialTree = function() {
+	//-draw layout
+	ns.sev.resultClusterTreeJSON = ns.sev.getClusterTreeJSON(ns.sev.resultSolrJSON);
+	ns.sev.drawD3TreeRadial(ns.sev.resultClusterTreeJSON);
+	//-refresh the SERPs table
+	ns.sev.refreshSerps(ns.sev.resultSolrJSON);
+}
+
+//--Tab: force graph
+ns.sev.getForceGraph = function() {
+	//-draw layout
+	ns.sev.resultLinksNodesForceJSON = ns.sev.getLinksNodesForceJSON(ns.sev.resultSolrJSON); 		
+	ns.sev.drawD3ForceGraph(ns.sev.resultLinksNodesForceJSON);
+	//-refresh the SERPs table
+	ns.sev.refreshSerps(ns.sev.resultSolrJSON);
+}
+
+//--Tab: force search graph
+ns.sev.getForceSearchGraph = function() {
+	//-draw layout
+	ns.sev.resultClusterTreeJSON = ns.sev.getClusterTreeJSON(ns.sev.resultSolrJSON);
+	ns.sev.drawD3ForceSearchGraph(ns.sev.resultClusterTreeJSON);
+	//-refresh the SERPs table
+	ns.sev.refreshSerps(ns.sev.resultSolrJSON);
+}
+
+//--Tab: force cluster nodes
+ns.sev.getForceClusterNodes = function() {
+	//-draw layout
+	ns.sev.resultClusterNodesJSON = ns.sev.getClusterNodesJSON(ns.sev.resultSolrJSON);
+	ns.sev.drawD3ForceClusterNodes(ns.sev.resultClusterNodesJSON);
+	//-refresh the SERPs table
+	ns.sev.refreshSerps(ns.sev.resultSolrJSON);
+}
+
+// --Tab dropdown: activate clustering algorithm
+ns.sev.setDropdownClusteringAlgorithm = function() {
+	//set lingo
+	$(ns.sev.css.tabLingo).click(function() {
+		// reset ns.sev.resultSolrJSON
+		ns.sev.resultSolrJSON = ns.sev.resultSolrClusteringLingoJSON;
+		$(ns.sev.css.tabLingo).attr("class", "active");
+		$(ns.sev.css.tabStc).attr("class", "");
+		$(ns.sev.css.tabKmeans).attr("class", "");
+	});
+
+	//set stc
+	$(ns.sev.css.tabStc).click(function() {
+		// reset ns.sev.resultSolrJSON
+		ns.sev.resultSolrJSON = ns.sev.resultSolrClusteringStcJSON;
+		$(ns.sev.css.tabLingo).attr("class", "");
+		$(ns.sev.css.tabStc).attr("class", "active");
+		$(ns.sev.css.tabKmeans).attr("class", "");
+	});
+
+	//set kmeans
+	$(ns.sev.css.tabKmeans).click(function() {
+		// reset ns.sev.resultSolrJSON
+		ns.sev.resultSolrJSON = ns.sev.resultSolrClusteringKmeansJSON;
+		$(ns.sev.css.tabLingo).attr("class", "");
+		$(ns.sev.css.tabStc).attr("class", "");
+		$(ns.sev.css.tabKmeans).attr("class", "active");
+	});
 }
 
 /*
  * -AJAX: Solr request/response
  */
 ns.sev.ajaxSolrClustering = function() {
+	//get clustering lingo
 	$.ajax({
-		url: ns.sev.solr.query,
+		url: ns.sev.solr.query + "&" + ns.sev.solr.ClusteringEngineLingo,
 		dataType: 'jsonp',
 		jsonp: 'json.wrf',
-		success: function(response){
+		success: function(response) {
 			ns.sev.resultSolrJSON = response;
 			ns.sev.afterAJAX();
+			//set lingo
+			ns.sev.resultSolrClusteringLingoJSON = ns.sev.resultSolrJSON;
+			//call stc
+			ajaxSolrClusteringStc();			
 		},
 		error: function (xhr, err) {
             console.log(xhr);
             console.log(err);
         }
 	});
+	
+	//get clustering stc
+	function ajaxSolrClusteringStc() {
+		$.ajax({
+			url: ns.sev.solr.query + "&" + ns.sev.solr.ClusteringEngineStc,
+			dataType: 'jsonp',
+			jsonp: 'json.wrf',
+			success: function(response) {
+				//set stc
+				ns.sev.resultSolrClusteringStcJSON = response;
+				//call kmenas
+				ajaxSolrClusteringKeams();
+			},
+			error: function (xhr, err) {
+	            console.log(xhr);
+	            console.log(err);
+	        }
+		});
+	}
+		
+	//get clustering kmeans
+	function ajaxSolrClusteringKeams() {
+		$.ajax({
+			url: ns.sev.solr.query + "&" + ns.sev.solr.ClusteringEngineKmeans,
+			dataType: 'jsonp',
+			jsonp: 'json.wrf',
+			success: function(response) {
+				//set kmenas
+				ns.sev.resultSolrClusteringKmeansJSON = response;
+			},
+			error: function (xhr, err) {
+	            console.log(xhr);
+	            console.log(err);
+	        }
+		});
+	}
 }
 
 /*
@@ -230,7 +362,7 @@ ns.sev.getClusterTreeJSON = function(resultSolr) {
 	resultSolr.clusters.forEach(function(clustersItem) {
 		//set clusterLabel
 		var clusterLabel = {"name":"", "children":[], "docs":[],  "depth":"", "tooltip":""};
-		clusterLabel.name = clustersItem.labels[0];
+		clusterLabel.name = clustersItem.labels.toString().replace(/,/g , ", ");
 		clusterLabel.docs = clustersItem.docs;
 		clusterLabel.depth = 1;
 		clusterLabel.tooltip = "cluster";
@@ -588,12 +720,12 @@ ns.sev.getLinksNodesForceJSON = function(resultSolr) {
 	//set links
 	resultSolr.clusters.forEach(function(clustersItem) {
 		//---set clusterDocs for cluster nodes
-		var label = clustersItem.labels[0];
+		var label = clustersItem.labels.toString().replace(/,/g , ", ");
 		clusterDocs[label] = {name: label, docs: clustersItem.docs};
 		//---set links
 		clustersItem.docs.forEach(function(docsItem) {
 			var linkObject = {"source":"", "target":""};
-			linkObject.source = clustersItem.labels[0];
+			linkObject.source = clustersItem.labels.toString().replace(/,/g , ", ");
 			linkObject.target = docsItem;
 			links.push(linkObject);
 		})
@@ -1001,7 +1133,7 @@ ns.sev.getClusterNodesJSON = function(resultSolr) {
 		
 		//-set clusters
 		var cluster = {"name":"", "docs":[]};
-		cluster.name = clustersItem.labels[0];
+		cluster.name = clustersItem.labels.toString().replace(/,/g , ", ");
 		cluster.docs = clustersItem.docs;
 		clusterNodes.clusters.push(cluster);
 		
@@ -1030,7 +1162,7 @@ ns.sev.getClusterNodesJSON = function(resultSolr) {
 			clusterDoc.url = resultSolr.response.docs[docsItem-1].url;
 			clusterDoc.query = resultSolr.response.docs[docsItem-1].query;
 			clusterDoc.depth = 2;
-			clusterDoc.clusterName = clustersItem.labels[0];
+			clusterDoc.clusterName = clustersItem.labels.toString().replace(/,/g , ", ");
 			clusterDoc.clusterDocs = clustersItem.docs;
 			clusterDoc.cluster = clusterIndex;
 			//clusterDoc.radius = 40 - Math.floor((clusterDoc.rank / resultSolr.response.docs.length) * 10);
@@ -1653,12 +1785,12 @@ ns.sev.clusterPages = function(cluster, isToAdd) {
 	//-update the cluster labels
 	if (isToAdd) {
 	//--add cluster
-		ns.sev.clusters.push(cluster);
+		ns.sev.clusteredSerpList.push(cluster);
 	} else {
 	//--remove cluster
-		ns.sev.clusters.every(function(item, index, array) {
+		ns.sev.clusteredSerpList.every(function(item, index, array) {
 			if (item.name == cluster.name) {
-				ns.sev.clusters.splice(index, 1);
+				ns.sev.clusteredSerpList.splice(index, 1);
 				
 				return false;
 			} else {
@@ -1667,15 +1799,15 @@ ns.sev.clusterPages = function(cluster, isToAdd) {
 		}); 
 	}
 	
-	//evaluate empty ns.sev.clusters
-	if (ns.sev.clusters.length == 0) {
+	//evaluate empty ns.sev.clusteredSerpList
+	if (ns.sev.clusteredSerpList.length == 0) {
 		ns.sev.refreshSerps(root);
 		return;
 	}
 	
 	//-get sorted docs union 
 	var docs = [];
-	ns.sev.clusters.forEach(function(item) {
+	ns.sev.clusteredSerpList.forEach(function(item) {
 		docs = _.union(docs, item.docs);
 	});
 	docs.sort(function(a, b) {return a-b});
@@ -1709,7 +1841,7 @@ ns.sev.refreshSerps = function(solrJSON) {
 	//reinit the global scope 
 	ns.sev.currentPage = 1;
 	ns.sev.serpsPerPage = 10;
-	ns.sev.clusters = [];
+	ns.sev.clusteredSerpList = [];
 	
 	var root = solrJSON;
 	

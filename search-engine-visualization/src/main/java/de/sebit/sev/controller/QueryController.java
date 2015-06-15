@@ -30,19 +30,17 @@ public class QueryController {
 		logger.info("Welcome home! The client locale is {}.", locale);
 		
 		//call service
+		//-get Bing results and save it to resultDTOList
 		List<ResultDTO> resultDTOList = searchService.bingService.getBingResultDTOList(query, 2);
-		String resultDTOListJSON = searchService.jsonService.getJSONfromList(resultDTOList);
+		//-add resultDTOList to Solr
 		searchService.solrService.addListToSolrCore(resultDTOList);
+		//-set resultDTOListJSON for Model
+		//String resultDTOListJSON = searchService.jsonService.getJSONfromList(resultDTOList);
 		
 		//add to Model
 		model.addAttribute("queryString", query); // View access: header.jsp
-		model.addAttribute("resultDTO", resultDTOList);	// View access: search.jsp
-		model.addAttribute("resultDTOListJSON", resultDTOListJSON); // View access: footer.jsp
-		
-		//to delete
-		System.out.println("/search - query: " + query);
-		System.out.println("/search - resultDTOList: " + resultDTOList);
-		System.out.println("/search - resultDTOListJSON: " + resultDTOListJSON);
+		//model.addAttribute("resultDTO", resultDTOList);	// View access: search.jsp
+		//model.addAttribute("resultDTOListJSON", resultDTOListJSON); // View access: footer.jsp
 
 		//call View
 		return "search";

@@ -77,4 +77,4 @@
 <!--
 <script src="resources/js/script/script.js"></script>
 -->
-<script src="resources/js/script/script.min.js"></script>
+<script src="resources/js/script/script.js"></script>

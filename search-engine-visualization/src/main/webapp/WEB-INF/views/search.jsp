@@ -10,7 +10,22 @@
 <div id="main" class="container">
 	<div class="cluster">
 		<div class="page-header">
-			<h2>Result Visualization<small></small></h2>
+			<h2>Result Visualization
+				<small>
+					<span id="tab-dropdown-cluster-algo" class="dropdown">
+						<a aria-expanded="false" class="dropdown-toggle" data-toggle="dropdown" aria-label="Settings" href="#">
+							<span class="glyphicon glyphicon-wrench" aria-hidden="true"></span>
+						</a>
+						<ul class="dropdown-menu">
+							<li class="dropdown-header">Cluster algorithm</li>
+							<li class="divider"></li>
+							<li id="tab-lingo" class="active"><a href="#">Lingo</a></li>
+							<li id="tab-stc" class=""><a href="#">STC</a></li>
+							<li id="tab-kmeans" class=""><a href="#">KMeans</a></li>
+						</ul>
+					</span>
+				</small>
+			</h2>
 		</div>
 		<ul class="nav nav-tabs">
 			<li class="active" id="tab-word-cloud"><a aria-expanded="false" href="#word-cloud"
@@ -59,7 +74,10 @@
 		</div>
 		<div class="tab-pane fade active in" id="list">
 			<br>
-			<%@ include file="./parts/list.jsp"%>
+			<table class="table table-bordered table-hover table-striped">
+				<thead></thead>
+				<tbody id="hilitor"></tbody>
+			</table>
 		</div>
 	</div>
 </div>
