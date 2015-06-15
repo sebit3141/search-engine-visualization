@@ -17,11 +17,11 @@
 							<span class="glyphicon glyphicon-wrench" aria-hidden="true"></span>
 						</a>
 						<ul class="dropdown-menu">
-							<li class="dropdown-header">Cluster algorithm</li>
+							<li class="dropdown-header">Clustering Algorithms</li>
 							<li class="divider"></li>
 							<li id="tab-lingo" class="active"><a href="#">Lingo</a></li>
 							<li id="tab-stc" class=""><a href="#">STC</a></li>
-							<li id="tab-kmeans" class=""><a href="#">KMeans</a></li>
+							<li id="tab-kmeans" class=""><a href="#">K-Means</a></li>
 						</ul>
 					</span>
 				</small>
@@ -29,7 +29,7 @@
 		</div>
 		<ul class="nav nav-tabs">
 			<li class="active" id="tab-word-cloud"><a aria-expanded="false" href="#word-cloud"
-				data-toggle="tab">Result Pages Refinement</a></li>
+				data-toggle="tab">Search Refinement</a></li>
 			<li class="" id="tab-tree"><a aria-expanded="true" href="#tree"
 				data-toggle="tab">Tree</a></li>
 			<li class="" id="tab-radial-tree"><a aria-expanded="true" href="#radial-tree"
