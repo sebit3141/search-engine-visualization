@@ -401,7 +401,7 @@ ns.sev.getClusterTreeJSON = function(resultSolr) {
 //----clusterTree (Object) (input data for define nodes and links)
 ns.sev.drawD3Tree = function(clusterTree) {
 	//size
-	var margin = {top: 20, right: 120, bottom: 20, left: 120};
+	var margin = {top: 20, right: 120, bottom: 20, left: 200};
 	var width = parseInt(d3.select("div.cluster").style('width'), 10);
 	var areaRatio = .5;
 	var height = width * areaRatio;
