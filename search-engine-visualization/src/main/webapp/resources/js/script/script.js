@@ -35,8 +35,9 @@ ns.sev.solr.ClusteringEngineKmeans = "clustering.engine=kmeans";
 	
 ns.sev.solr.urlLocal = "http://localhost:5000/sevCore";
 ns.sev.solr.urlHeroku = "https://solr-clustering.herokuapp.com/sevCore";
-//ns.sev.solr.url = ns.sev.solr.urlLocal;
-ns.sev.solr.url = ns.sev.solr.urlHeroku;
+
+ns.sev.solr.url = ns.sev.solr.urlLocal;
+//ns.sev.solr.url = ns.sev.solr.urlHeroku;
 
 ns.sev.solr.query = ns.sev.solr.url + ns.sev.solr.qt + "?" + ns.sev.solr.wt + "&" + ns.sev.solr.facet;
 

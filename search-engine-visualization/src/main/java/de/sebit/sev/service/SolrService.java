@@ -24,13 +24,13 @@ import de.sebit.sev.dto.ResultDTO;
 public class SolrService {
 		
 	//URL (inactive)
-	private String urlLocalSolr = "http://localhost:8983/solrClient/searchClustering";
+	//private String urlLocalSolr = "http://localhost:8983/solrClient/searchClustering";
 	private String urlLocalSolrClustering = "http://localhost:5000/sevCore";
-	private String urlHerokuSolrClustering = "https://solr-clustering.herokuapp.com/sevCore";
+	//private String urlHerokuSolrClustering = "https://solr-clustering.herokuapp.com/sevCore";
 	
 	//URL (active)
-	//private String urlString = urlLocalSolrClustering;
-	private String urlString = urlHerokuSolrClustering;
+	private String urlString = urlLocalSolrClustering;
+	//private String urlString = urlHerokuSolrClustering;
 	
 	//Solr Client
 	SolrClient solrClient;
