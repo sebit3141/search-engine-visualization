@@ -8,7 +8,5 @@ public class SearchService {
 	@Autowired
 	public BingService bingService;
 	@Autowired
-	public JsonService jsonService;
-	@Autowired
 	public SolrService solrService;
 }

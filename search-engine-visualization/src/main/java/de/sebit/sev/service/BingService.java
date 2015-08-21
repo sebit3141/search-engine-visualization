@@ -56,12 +56,6 @@ public class BingService {
         	   //add result to List
         	   resultDTOList.add(resultDTO);
 
-        	   System.out.println(resultDTO.getRank());
-        	   System.out.println(resultDTO.getTitle());
-        	   System.out.println(resultDTO.getUrl());
-        	   System.out.println(resultDTO.getDisplayUrl());
-        	   System.out.println(resultDTO.getDescription()); 
-
         	   j++;
            }
         }	 		
